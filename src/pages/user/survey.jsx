@@ -11,7 +11,9 @@ function SurveyPage() {
   useEffect(() => {
     const fetchSurveys = async () => {
       try {
-        const res = await api.get("/survey/assigned");
+        const res = await api.get("/surveys/assigned", {
+          params: { userId: user?._id },
+        });
         setSurveys(res.data.surveys || []);
       } catch (err) {
         console.error("Failed to fetch surveys", err);

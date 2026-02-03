@@ -4,6 +4,7 @@ import api from "../../api/axios"
 import CreateUserModal from "./createUserModal";
 import EditUserModal from "./EditUserModal";
 // import AddPointsModal from "./AddPointsModal";
+import ErrorBoundary from "./ErrorBoundary";
 
 
 function AdminDashboard() {
@@ -22,9 +23,15 @@ function AdminDashboard() {
   const [showAddPointsModal, setShowAddPointsModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [editUser, setEditUser] = useState(null);
+  const [showAssignedSurveysModal, setShowAssignedSurveysModal] = useState(false);
+  // Removed duplicate declaration of assignedSurveysForUser
+  const [assignedSurveysUser, setAssignedSurveysUser] = useState(null);
+    // Fetch assigned surveys for a user
+    // Removed duplicate declaration of handleViewAssignedSurveys
   const [pointsToAdd, setPointsToAdd] = useState("")
   const [openCreateUser, setOpenCreateUser] = useState(false);
   const [filterActive, setFilterActive] = useState(true); // State to toggle active/inactive filter
+  const [selectedSurveyId, setSelectedSurveyId] = useState("");
 
   const [users, setUsers] = useState([])
   const [surveys, setSurveys] = useState([])
@@ -46,6 +53,7 @@ const [redeemPage, setRedeemPage] = useState(1);
 const [redeemLimit, setRedeemLimit] = useState(10);
 const [redeemTotalPages, setRedeemTotalPages] = useState(1);
 const [redemptionRequests, setRedemptionRequests] = useState([]);
+const[assignedSurveys,setAssignedSurveys]=useState([]);
 
 
   // Form states
@@ -67,6 +75,9 @@ const [redemptionRequests, setRedemptionRequests] = useState([]);
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedSurvey, setSelectedSurvey] = useState(null)
   const [assignedUsers, setAssignedUsers] = useState([])
+  
+  const [assignedSurveysForUser, setAssignedSurveysForUser] = useState([])
+
 
   const [showEditModal, setShowEditModal] = useState(false)
   const [editSurvey, setEditSurvey] = useState({
@@ -77,7 +88,7 @@ const [redemptionRequests, setRedemptionRequests] = useState([]);
     startDate: "",
     endDate: ""
   })
-
+  console.log("Edit Survey State:", editSurvey); // Log the state before API call
 
   const fetchRedeemRequests = useCallback(async () => {
   try {
@@ -99,26 +110,50 @@ const [redemptionRequests, setRedemptionRequests] = useState([]);
 
 
 const handleAddPoints = async () => {
-  if (!pointsToAdd || pointsToAdd <= 0) {
-    setErrorMessage("Please enter valid points")
-    return
+  if (!selectedUser || !selectedSurveyId || !pointsToAdd || pointsToAdd <= 0) {
+    setErrorMessage("User, survey and valid points are required");
+    return;
   }
 
   try {
-    await api.post(
-      `/auth/users/${selectedUser._id}/add-points`,
-      { points: Number(pointsToAdd) }
-    )
+    const res = await api.post("/surveys/add-points", {
+      userId: selectedUser._id,
+      surveyId: selectedSurveyId,
+      points: Number(pointsToAdd)
+    });
 
-    setShowAddPointsModal(false)
-    setPointsToAdd("")
-    setSelectedUser(null)
+    setSuccessMessage(res.data.message || "Points added successfully");
 
-    fetchUsers() // refresh table
+    // Refresh Add Points dropdown (removes rewarded survey)
+    fetchAssignedSurveysForPoints(selectedUser._id);
+
+    // Refresh users table
+    fetchUsers();
+
+    // Reset modal state
+    setSelectedSurveyId("");
+    setPointsToAdd("");
+    setShowAddPointsModal(false);
+    setSelectedUser(null);
   } catch (err) {
-    setErrorMessage("Failed to add points")
+    setErrorMessage(
+      err.response?.data?.message || "Failed to add points"
+    );
   }
-}
+  console.log("ADD POINTS PAYLOAD", {
+  userId: selectedUser?._id,
+  surveyId: selectedSurveyId,
+  points: pointsToAdd
+});
+};
+
+//fetch complete survey
+
+
+
+
+
+
 
 
   // Fetch profile on mount
@@ -159,47 +194,43 @@ const handleAddPoints = async () => {
       const res = await api.get("/auth/users", {
         params: {
           search,
-          page,
+          // page,
           limit,
           isActive: filterActive.toString(), // Convert boolean to string
         }
       })
 
       setUsers(res.data.users)
-      setTotalPages(res.data.pages)
+      // setTotalPages(res.data.pages)
     } catch (err) {
       console.error("Failed to fetch users", err)
       setErrorMessage("Failed to fetch users")
     }
-  }, [search, page, limit, filterActive]); // Add filterActive to dependencies
+  }, [search, limit, filterActive]); // Removed page from dependencies
 
   // Fetch all surveys
   const fetchSurveys = useCallback(async () => {
     try {
-      const res = await api.get("/survey/all", {
-        params: {
-          search: surveySearch,
-          page: surveyPage,
-          limit: surveyLimit
-        }
-      })
-      setSurveys(res.data.surveys || [])
-      setSurveyTotalPages(res.data.pages || 1)
+      const res = await api.get("/surveys/all", {
+        params: { search: surveySearch, page: surveyPage, limit: surveyLimit },
+      });
+      setSurveys(res.data.surveys);
+      setSurveyTotalPages(res.data.pages);
+      console.log("Fetched Surveys:", res.data.surveys); // Log fetched surveys to verify data
     } catch (err) {
-      console.error("Failed to fetch surveys", err)
-      setErrorMessage("Failed to fetch surveys")
+      console.error("Failed to fetch surveys", err.response?.status, err.response?.data);
     }
-  }, [surveySearch, surveyPage, surveyLimit])
+  }, [surveySearch, surveyPage, surveyLimit]);
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
     try {
-      const res = await api.get("/survey/admin/stats")
-      setStats(res.data)
+      const res = await api.get("/surveys/admin/stats");
+      setStats(res.data);
     } catch (err) {
-      console.error("Failed to fetch stats", err)
+      console.error("Failed to fetch stats", err.response?.status, err.response?.data);
     }
-  }, [])
+  }, []);
 
   const fetchRedeemStats = useCallback(async () => {
   try {
@@ -215,6 +246,7 @@ const handleAddPoints = async () => {
     console.error("Failed to fetch redemption stats", err);
   }
 }, []);
+
 
 
   // Load data when overview tab is active
@@ -233,8 +265,39 @@ const handleAddPoints = async () => {
   (user) => Boolean(user.isActive) === filterActive
 );
 
+//surevey selection add points modal
+// Fetch ONLY assigned (not rewarded) surveys for selected user
+const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
+  try {
+    const res = await api.get(
+      `/surveys/assigned-for-points?userId=${userId}`
+    );
+    setAssignedSurveys(res.data.surveys || []);
+  } catch (err) {
+    console.error("Failed to fetch assigned surveys for add points", err);
+    setAssignedSurveys([]);
+  }
+}, []);
 
-  // Fetch users when users tab is active or search/pagination changes
+  useEffect(() => {
+  if (showAddPointsModal && selectedUser) {
+    fetchAssignedSurveysForPoints(selectedUser._id);
+  }
+}, [showAddPointsModal, selectedUser, fetchAssignedSurveysForPoints]);
+
+
+  const handleSurveySelection = (event) => {
+    const surveyId = event.target.value;
+    setSelectedSurveyId(surveyId);
+
+    const selectedSurvey = assignedSurveys.find((survey) => survey._id === surveyId);
+    if (selectedSurvey) {
+      setPointsToAdd(selectedSurvey.rewardPoints);
+    }
+  };
+
+  // Faetch users when users tab is active or search/pagination changes
+
   useEffect(() => {
     if (activeTab === "users") {
       fetchUsers()
@@ -271,12 +334,12 @@ const handleAddPoints = async () => {
     const endDate = new Date(newSurvey.endDate)
 
     if (startDate >= endDate) {
-      setErrorMessage("End date must be after start date")
+      setErrorMessage("End date must be after start date. Please ensure the dates are correct.");
       return
     }
 
     try {
-      const res = await api.post("/survey/create", {
+      const res = await api.post("/surveys/create", {
         title: newSurvey.title,
         surveyLink: newSurvey.surveyLink,
         rewardPoints: parseInt(newSurvey.rewardPoints),
@@ -292,35 +355,74 @@ const handleAddPoints = async () => {
     }
   }
 
-  // Assign survey handler
-  const handleAssignSurvey = async (e) => {
-    e.preventDefault()
-    setErrorMessage("")
-    setSuccessMessage("")
+    // ...existing code...
+      // Fetch assigned surveys for a user when opening modal
+      const handleViewAssignedSurveys = async (user) => {
+  setAssignedSurveysUser(user);
 
-    if (assignSurvey.userIds.length === 0 || !assignSurvey.surveyId) {
-      setErrorMessage("Please select at least one user and a survey")
-      return
-    }
+  try {
+    const res = await api.get(`/surveys/assigned?userId=${user._id}`);
+    console.log("Assigned surveys API RAW:", res.data);
+    const fetchedAssignedSurveys = Array.isArray(res.data)
+      ? res.data
+      : res.data.surveys
+      ? res.data.surveys
+      : res.data.assignedSurveys
+      ? res.data.assignedSurveys
+      : [];
 
-    try {
-      const res = await api.post("/survey/assign-multiple", {
-        userIds: assignSurvey.userIds,
-        surveyId: assignSurvey.surveyId
-      })
 
-      setSuccessMessage(`Survey assigned to ${assignSurvey.userIds.length} user(s) successfully!`)
-      setAssignSurvey({ userIds: [], surveyId: "" })
-      fetchSurveys()
-    } catch (err) {
-      setErrorMessage(err.response?.data?.message || "Failed to assign survey")
-    }
+    setAssignedSurveysForUser(fetchedAssignedSurveys);
+    setShowAssignedSurveysModal(true);
+  } catch (err) {
+    console.error("Failed to fetch assigned surveys", err);
+    setAssignedSurveysForUser([]);
+    setShowAssignedSurveysModal(true);
   }
+};
+
+       
+    // Assign survey handler
+    const handleAssignSurvey = async (e) => {
+      e.preventDefault()
+      setErrorMessage("")
+      setSuccessMessage("")
+  
+      if (assignSurvey.userIds.length === 0 || !assignSurvey.surveyId) {
+        setErrorMessage("Please select at least one user and a survey")
+        return
+      }
+  
+      try {
+        const res = await api.post("/surveys/assign-multiple", {
+          userIds: assignSurvey.userIds,
+          surveyId: assignSurvey.surveyId
+        })
+  
+        setSuccessMessage(`Survey assigned to ${assignSurvey.userIds.length} user(s) successfully!`)
+        setAssignSurvey({ userIds: [], surveyId: "" })
+        fetchSurveys()
+
+        if(assignedSurveysUser){
+          await handleViewAssignedSurveys(assignedSurveysUser);
+        }
+      } catch (err) {
+        // Improved error diagnostics
+        console.error("Assign survey error:", err, err.response?.data)
+        setErrorMessage(
+          err.response?.data?.message ||
+          (err.response?.data ? JSON.stringify(err.response.data) : "") ||
+          err.message ||
+          "Failed to assign survey"
+        )
+      }
+    }
+  // ...existing code...
 
   // Pause survey handler
   const handlePauseSurvey = async (surveyId) => {
     try {
-      await api.patch(`/survey/pause/${surveyId}`)
+      await api.patch(`/surveys/pause/${surveyId}`)
       setSuccessMessage("Survey paused successfully!")
       fetchSurveys()
     } catch (err) {
@@ -331,7 +433,7 @@ const handleAddPoints = async () => {
   // Resume survey handler
   const handleResumeSurvey = async (surveyId) => {
     try {
-      await api.patch(`/survey/resume/${surveyId}`)
+      await api.patch(`/surveys/resume/${surveyId}`)
       setSuccessMessage("Survey resumed successfully!")
       fetchSurveys()
     } catch (err) {
@@ -342,7 +444,8 @@ const handleAddPoints = async () => {
   // View survey details
   const handleViewSurvey = async (survey) => {
     try {
-      const res = await api.get(`/survey/${survey._id}/users`)
+      // Use the correct endpoint: /api/surveys/:id/users
+      const res = await api.get(`/surveys/${survey._id}/users`)
       setSelectedSurvey(survey)
       setAssignedUsers(res.data.users || [])
       setShowDetailModal(true)
@@ -355,14 +458,14 @@ const handleAddPoints = async () => {
   // Open edit modal
   const handleEditSurvey = (survey) => {
     setEditSurvey({
-      id: survey._id,
-      title: survey.title,
-      surveyLink: survey.surveyLink,
-      rewardPoints: survey.rewardPoints,
-      startDate: survey.startDate.split('T')[0],
-      endDate: survey.endDate.split('T')[0]
-    })
-    setShowEditModal(true)
+          id: survey._id,
+          title: survey.title,
+          surveyLink: survey.surveyLink,
+          rewardPoints: survey.rewardPoints,
+          startDate: survey.startDate ? new Date(survey.startDate).toISOString().slice(0, 16) : '',
+          endDate: survey.endDate ? new Date(survey.endDate).toISOString().slice(0, 16) : ''
+        })
+        setShowEditModal(true)
   }
 
   // Submit survey edit
@@ -383,26 +486,33 @@ const handleAddPoints = async () => {
 
     const startDate = new Date(editSurvey.startDate)
     const endDate = new Date(editSurvey.endDate)
+    const now = new Date()
 
-    if (startDate >= endDate) {
-      setErrorMessage("End date must be after start date")
+    if (startDate < now) {
+      setErrorMessage("Start date cannot be in the past")
+      return
+    }
+
+    if (endDate <= startDate) {
+      setErrorMessage("End date must be after start date. Please ensure the dates are correct.");
       return
     }
 
     try {
-      await api.patch(`/survey/${editSurvey.id}`, {
+      console.log("Submitting survey edit:", editSurvey);
+      await api.patch(`/surveys/${editSurvey.id}`, {
         title: editSurvey.title,
         surveyLink: editSurvey.surveyLink,
         rewardPoints: parseInt(editSurvey.rewardPoints),
         startDate: new Date(editSurvey.startDate).toISOString(),
         endDate: new Date(editSurvey.endDate).toISOString()
-      })
-      setSuccessMessage("Survey updated successfully!")
-      setShowEditModal(false)
-      fetchSurveys()
+      });
+      setSuccessMessage("Survey updated successfully!");
+      setShowEditModal(false);
+      fetchSurveys();
     } catch (err) {
-      console.error("Error updating survey:", err)
-      setErrorMessage(err.response?.data?.message || "Failed to update survey")
+      console.error("Error updating survey:", err);
+      setErrorMessage(err.response?.data?.message || "Failed to update survey");
     }
   }
 
@@ -464,78 +574,79 @@ const rejectRedeem = async (id) => {
 
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-1">Welcome, Admin</p>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-100">
+        {/* Header */}
+        <div className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600 mt-1">Welcome, Admin</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold transition"
+            >
+              Logout
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold transition"
-          >
-            Logout
-          </button>
         </div>
-      </div>
 
-      {/* Tabs Navigation */}
-      <div className="bg-white shadow mt-6 mx-6 rounded">
-        <div className="flex border-b">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`px-6 py-3 font-medium ${
-              activeTab === "overview"
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab("users")}
-            className={`px-6 py-3 font-medium ${
-              activeTab === "users"
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Users
-          </button>
-          <button
-            onClick={() => setActiveTab("surveys")}
-            className={`px-6 py-3 font-medium ${
-              activeTab === "surveys"
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Surveys
-          </button>
-          <button
-            onClick={() => setActiveTab("create")}
-            className={`px-6 py-3 font-medium ${
-              activeTab === "create"
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Create Survey
-          </button>
-          <button
-            onClick={() => setActiveTab("assign")}
-            className={`px-6 py-3 font-medium ${
-              activeTab === "assign"
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Assign Survey
-          </button>
+        {/* Tabs Navigation */}
+        <div className="bg-white shadow mt-6 mx-6 rounded">
+          <div className="flex border-b">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-6 py-3 font-medium ${
+                activeTab === "overview"
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`px-6 py-3 font-medium ${
+                activeTab === "users"
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Users
+            </button>
+            <button
+              onClick={() => setActiveTab("surveys")}
+              className={`px-6 py-3 font-medium ${
+                activeTab === "surveys"
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Surveys
+            </button>
+            <button
+              onClick={() => setActiveTab("create")}
+              className={`px-6 py-3 font-medium ${
+                activeTab === "create"
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Create Survey
+            </button>
+            <button
+              onClick={() => setActiveTab("assign")}
+              className={`px-6 py-3 font-medium ${
+                activeTab === "assign"
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Assign Survey
+            </button>
 
-          <button
+            <button
   onClick={() => setActiveTab("redeem")}
   className={`px-6 py-3 font-medium ${
     activeTab === "redeem"
@@ -790,16 +901,33 @@ const rejectRedeem = async (id) => {
                           </span>
                         </td>
                         <td className="p-3 border">
+  {u.role !== "admin" && (
+    <button
+      onClick={() => {
+        setSelectedUser(u);
+        setShowAddPointsModal(true);
+      }}
+      className="rounded-2xl bg-neutral-50 border px-4 py-1 border-gray-300 text-gray-700 hover:bg-gray-100 mr-2"
+    >
+      Add Points
+    </button>
+  )}
+  {u.role !== "admin" && (
+    <button
+      className="rounded-2xl bg-neutral-50 border px-4 py-1 border-gray-300 text-gray-700 hover:bg-gray-100 mr-2"
+      onClick={() => setEditUser(u)}
+    >
+      Edit
+    </button>
+  )}
+  {u.role !== "admin" && (
   <button
-    onClick={() => {
-      setSelectedUser(u)
-      setShowAddPointsModal(true)
-    }}
-    className=" rounded-2xl bg-neutral-50 border px-4 py-1 border-gray-300 text-gray-700 hover:bg-gray-100 mr-2"
+    className="rounded-2xl bg-neutral-50 border px-4 py-1 border-blue-500 text-blue-700 hover:bg-blue-100"
+    onClick={() => handleViewAssignedSurveys(u)}
   >
-    Add Points
+    View Assigned Surveys
   </button>
-  <button className=" rounded-2xl bg-neutral-50 border px-4 py-1 border-gray-300 text-gray-700 hover:bg-gray-100" onClick={() => setEditUser(u)}>Edit</button>
+  )}
 </td>
 
                       </tr>
@@ -835,6 +963,57 @@ const rejectRedeem = async (id) => {
                   No users found
                 </div>
               )}
+                {/* Assigned Surveys Modal - moved outside table to fix hydration error */}
+                {showAssignedSurveysModal && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded shadow-lg p-6 max-w-xl w-full mx-4 max-h-screen overflow-y-auto">
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-2xl font-bold">Assigned Surveys for {assignedSurveysUser?.name}</h2>
+                        <button
+                          onClick={() => setShowAssignedSurveysModal(false)}
+                          className="text-gray-500 hover:text-gray-700 text-2xl"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      {assignedSurveysForUser.length === 0 ? (
+                        <div className="text-center text-gray-500 py-6">No assigned surveys found.</div>
+                      ) : (
+                        <table className="w-full text-sm">
+                          <thead className="bg-gray-50 border-b">
+                            <tr>
+                              <th className="py-2 px-3 text-left">Survey Name</th>
+                              <th className="py-2 px-3 text-left">Points</th>
+                              <th className="py-2 px-3 text-left">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {assignedSurveysForUser.map((s, idx) => (
+                              <tr key={idx} className="border-b hover:bg-gray-50">
+                                <td className="py-2 px-3">{s.title}</td>
+                                <td className="py-2 px-3">{s.rewardPoints}</td>
+                                <td className="py-2 px-3">
+                                <span className={`px-2 py-1 rounded text-xs font-medium text-white ${
+                                 (s.assignmentStatus || "pending") === "rewarded"? "bg-green-500": "bg-yellow-500"}`}>
+                                {(s.assignmentStatus || "pending") === "rewarded"? "Done": "Pending"}
+                                </span>
+                              </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                      <div className="mt-6 flex justify-end">
+                        <button
+                          onClick={() => setShowAssignedSurveysModal(false)}
+                          className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded font-semibold transition"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
             </div>
           </div>
         )}
@@ -928,18 +1107,20 @@ const rejectRedeem = async (id) => {
                             </button>
                             <button
                               onClick={() => handleEditSurvey(survey)}
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition"
+                              className={`bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-medium transition ${survey.isAssigned ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              disabled={survey.isAssigned}
                             >
                               Edit
                             </button>
                             {survey.status === 'active' && (
-                              <button
-                                onClick={() => handlePauseSurvey(survey._id)}
-                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm font-medium transition"
-                              >
-                                Pause
-                              </button>
-                            )}
+  <button
+    onClick={() => handlePauseSurvey(survey._id)}
+    className={`bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm font-medium transition ${survey.isAssigned ? 'opacity-50 cursor-not-allowed' : ''}`}
+    disabled={survey.isAssigned}
+  >
+    Pause
+  </button>
+)}
                             {survey.status === 'paused' && (
                               <button
                                 onClick={() => handleResumeSurvey(survey._id)}
@@ -1063,12 +1244,12 @@ const rejectRedeem = async (id) => {
                   <input
                     type="datetime-local"
                     value={newSurvey.endDate}
-                    onChange={(e) =>
+                    onchange={(e) =>
                       setNewSurvey({ ...newSurvey, endDate: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    } className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                     required
                   />
+                  
                 </div>
 
                 <button
@@ -1107,11 +1288,11 @@ const rejectRedeem = async (id) => {
                         {u.name} ({u.email})
                       </option>
                     ))}
-                  </select>
                   <p className="text-xs text-gray-500 mt-2">Hold Ctrl (or Cmd) to select multiple users</p>
                   {assignSurvey.userIds.length > 0 && (
                     <p className="text-sm text-green-600 mt-2">{assignSurvey.userIds.length} user(s) selected</p>
                   )}
+                  </select>
                 </div>
 
                 <div>
@@ -1438,9 +1619,7 @@ const rejectRedeem = async (id) => {
                   <label className="block text-gray-700 font-semibold mb-2">
                     Start Date
                   </label>
-                  <input
-                    type="date"
-                    value={editSurvey.startDate}
+                  <input type="datetime-local" value={editSurvey.startDate}
                     onChange={(e) =>
                       setEditSurvey({ ...editSurvey, startDate: e.target.value })
                     }
@@ -1454,7 +1633,7 @@ const rejectRedeem = async (id) => {
                     End Date
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={editSurvey.endDate}
                     onChange={(e) =>
                       setEditSurvey({ ...editSurvey, endDate: e.target.value })
@@ -1487,41 +1666,49 @@ const rejectRedeem = async (id) => {
 
       {/* Add Points Modal */}
       {showAddPointsModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded shadow p-6 w-96">
-      <h3 className="text-lg font-bold mb-4">
-        Add Points to {selectedUser?.name}
-      </h3>
-
-      <input
-        type="number"
-        placeholder="Enter points"
-        value={pointsToAdd}
-        onChange={(e) => setPointsToAdd(e.target.value)}
-        className="w-full border px-3 py-2 rounded mb-4"
-      />
-
-      <div className="flex justify-end gap-2">
-        <button
-          onClick={() => {
-            setShowAddPointsModal(false)
-            setPointsToAdd("")
-          }}
-          className="px-4 py-2 border rounded"
-        >
-          Cancel
-        </button>
-
-        <button onClick={handleAddPoints}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          Add
-        </button>
-      </div>
-    </div>
-
-    
-  </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow p-6 w-96">
+            <h3 className="text-lg font-bold mb-4">
+              Add Points
+            </h3>
+            <div className="mb-4 flex flex-col">
+            <label htmlFor="surveyDropdown" className="mb-2 font-semibold text-gray-700">Select Survey:</label>
+            <select className="py-3 px-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+              id="surveyDropdown"
+              value={selectedSurveyId}
+              onChange={handleSurveySelection}
+            >
+              <option value="">Select a survey</option>
+              {assignedSurveys.map((survey) => (
+                <option className="text-gray-800"
+                 key={survey._id}
+                 value={survey._id}
+                 disabled={survey.assignmentStatus === 'rewarded'}
+                 >
+                  {survey.title} 
+                  {survey.assignmentStatus === 'rewarded' ? '(Already Rewarded)' : ''}
+                </option>
+              ))}
+            </select>
+            </div>
+            <div className="font-semibold text-gray-700 mb-4">Points to Add: <span className="font-semibold">{pointsToAdd}</span> {/* Display the points value or a placeholder */}
+            </div>
+            {assignedSurveys.length === 0 && (
+  <p className="text-red-500 text-sm mb-4">Please assign a survey to the user first.</p>
+)}
+            <div className="flex justify-end gap-4">
+              <button className="border border-gray-300 py-2 px-3 rounded" onClick={() => setShowAddPointsModal(false)}>Cancel</button>
+            
+            <button
+  onClick={handleAddPoints}
+  className="border bg-blue-700 text-white py-2 px-3 rounded"
+  disabled={assignedSurveys.length === 0 || !selectedSurveyId || assignedSurveys.find(s => s._id === selectedSurveyId)?.assignmentStatus === 'rewarded'}
+>
+  Add Points
+</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/*edit User Modal */}
@@ -1533,6 +1720,7 @@ const rejectRedeem = async (id) => {
       )}
 
     </div>
+    </ErrorBoundary>
   )
 }
 

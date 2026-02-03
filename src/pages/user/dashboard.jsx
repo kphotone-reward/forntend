@@ -41,7 +41,9 @@ function UserDashboard() {
   useEffect(() => {
     const fetchAssignedSurveys = async () => {
       try {
-        const res = await api.get("/survey/assigned");
+        const res = await api.get("/surveys/assigned", {
+          params: { userId: user?._id },
+        });
         setSurveys(res.data.surveys || []);
       } catch (err) {
         console.error("Failed to fetch surveys", err);
@@ -109,6 +111,22 @@ function UserDashboard() {
     };
   }, []);
 
+  //fetach Completed Survey
+  const [completedSurveys, setCompletedSurveys] = useState([]);
+  useEffect(() => {
+  const fetchCompletedSurveys = async () => {
+    try {
+      const res = await api.get("/surveys/completed");
+      setCompletedSurveys(res.data.surveys || []);
+    } catch (err) {
+      console.error("Failed to fetch completed surveys", err);
+    }
+  };
+
+  fetchCompletedSurveys();
+}, []);
+
+
   // Clear notification after 3 seconds
   useEffect(() => {
     if (notification) {
@@ -132,7 +150,7 @@ function UserDashboard() {
             style={{ width: 150, height: 50 }}
           />
           <div className="flex items-center relative">
-            <span className="text-sm/6 text-gray-950 dark:text-white mr-4 capitalize">
+            <span className="text-sm/6 text-gray-950  mr-4 capitalize">
               {user?.email?.split("@")[0]}
             </span>
             <button
@@ -170,11 +188,11 @@ function UserDashboard() {
                 Dashboard
               </a>
             </li>
-            <li>
+            {/* <li>
               <a href="/user/survey" className="text-blue-600 hover:underline">
                 Survey
               </a>
-            </li>
+            </li> */}
             <li>
               <a href="/user/redeemPoints" className="text-blue-600 hover:underline">
                 Redeem Status
@@ -273,43 +291,79 @@ function UserDashboard() {
 
           {/* Recent Surveys */}
           <div className="mt-12">
-            <h3 className="text-xl font-bold">Recent Survey</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Recent surveys assigned to your account
-            </p>
+            <h3 className="text-xl font-bold mb-4">Completed Surveys & Earned Points</h3>
+            
             <hr className="mb-2 border-gray-300" />
-            <div className="flex flex-wrap gap-4">
-              {surveys.slice(0, 3).map((survey) => (
-                <div
-                  key={survey._id}
-                  className="bg-white p-4 rounded shadow w-64"
-                >
-                  <h4 className="font-semibold">{survey.title}</h4>
-                  <a
-                    href={survey.surveyLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 text-sm underline"
-                  >
-                    Open Survey
-                  </a>
-
-                  <div className="flex justify-between items-center mt-3">
-                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded">
+            <table className="w-full text-sm border-none">
+              <thead className="bg-gray-50 border-b border-gray-300">
+                <tr>
+                  <th className="py-2 px-3 text-left">Survey</th>
+                  <th className="py-2 px-3 text-left">Points</th>
+                  <th className="py-2 px-3 text-left">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {surveys.slice(0, 3).map((survey) => (
+                  <tr key={survey._id} className="border-b">
+                    <td className="py-2 px-3  text-black">{survey.title}</td>
+                    <td className="py-2 px-3  text-black">
                       {survey.rewardPoints} pts
-                    </span>
-                    <span className="text-xs capitalize px-2 py-1 rounded bg-blue-500 text-white">
-                      {survey.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </td>
+                    <td className="py-2 px-3 border-none text-gray-600 capitalize">
+                      <span
+                        className={`px-2 py-1 rounded text-white ${
+                          survey.status === "active"
+                            ? "bg-green-500"
+                            : "bg-blue-500"
+                        }`}
+                      >
+                        {survey.status === "active" ? "Completed" : survey.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
             {surveys.length === 0 && (
               <p className="text-gray-500 mt-4">No surveys assigned</p>
             )}
           </div>
+
+          {/* Points Details Table */}
+          {/* <div className="bg-white rounded shadow p-6 mt-6">
+  <h3 className="text-xl font-bold mb-4">
+    Completed Surveys & Earned Points
+  </h3>
+
+  {completedSurveys.length === 0 ? (
+    <p className="text-gray-500">No completed surveys yet.</p>
+  ) : (
+    <table className="w-full text-sm">
+      <thead className="bg-gray-50 border-b">
+        <tr>
+          <th className="py-2 px-3 text-left">Survey</th>
+          <th className="py-2 px-3 text-left">Points</th>
+          <th className="py-2 px-3 text-left">Completed On</th>
+        </tr>
+      </thead>
+      <tbody>
+        {completedSurveys.map((s) => (
+          <tr key={s.surveyId} className="border-b">
+            <td className="py-2 px-3">{s.title}</td>
+            <td className="py-2 px-3 font-semibold text-green-600">
+              +{s.points}
+            </td>
+            <td className="py-2 px-3 text-gray-600">
+              {new Date(s.rewardedAt).toLocaleDateString()}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div> */}
+
 
           {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
         </main>
