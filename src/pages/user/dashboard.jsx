@@ -392,7 +392,7 @@ function UserDashboard() {
                 </thead>
                    <tbody className="divide-y divide-gray-100">
                       {filteredSurveys.slice(0, 3).map((survey) => {
-  
+  console.log(survey); // Log each survey object
   return (
     <tr key={survey._id} className="hover:bg-gray-50">
       <td className="py-3 px-4 font-medium">
@@ -441,7 +441,7 @@ function UserDashboard() {
                     <table className="w-full text-sm border border-gray-300 border-b-0 rounded-lg shadow-sm">
                       <thead className="bg-gray-100 border-b border-gray-300">
                         <tr>
-                          <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Request ID</th>
+                          <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Product ID</th>
                           <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Date</th>
                           <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Points</th>
                           <th className="py-2 px-4 text-left font-semibold text-gray-700">Status</th>
@@ -471,7 +471,7 @@ function UserDashboard() {
                       <table className="w-full text-sm border border-gray-300 border-b-0 rounded-lg shadow-sm">
                         <thead className="bg-gray-100 border-b border-gray-300">
                           <tr>
-                            <th className="py-2 px-4 text-left border-r border-gray-300 text-gray-800 font-semibold">Request ID</th>
+                            <th className="py-2 px-4 text-left border-r border-gray-300 text-gray-800 font-semibold">Product ID</th>
                             <th className="py-2 px-4 text-left border-r border-gray-300 text-gray-800 font-semibold">Date</th>
                             <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Points</th>
                             <th className="py-2 px-4 text-left font-semibold text-gray-700">Status</th>

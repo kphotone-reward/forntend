@@ -1522,6 +1522,7 @@ const getCurrentDateTime = () => {
       <table className="w-full">
         <thead className="bg-gray-50 border-b">
           <tr>
+            <th className="py-3 px-4 text-left">Product ID</th>
              <th className="py-3 px-4 text-left">Date</th>
             <th className="py-3 px-4 text-left">User</th>
             <th className="py-3 px-4 text-left">Email</th>
@@ -1545,6 +1546,7 @@ const getCurrentDateTime = () => {
           ) : (
             redemptionRequests.map((r) => (
               <tr key={r._id} className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4">{r._id}</td>
                 <td className="py-3 px-4 text-sm text-gray-600">{new Date(r.createdAt).toLocaleDateString()}</td>
                 <td className="py-3 px-4">{r.userId?.name}</td>
                 <td className="py-3 px-4">{r.userId?.email}</td>
