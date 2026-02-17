@@ -23,7 +23,7 @@ function UserDashboard() {
       const res = await api.get("/auth/profile");
       setUser(res.data.user);
     } catch (err) {
-      console.error("Profile fetch failed", err);
+     // console.error("Profile fetch failed", err);
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ function UserDashboard() {
         });
         setSurveys(res.data.surveys || []);
       } catch (err) {
-        console.error("Failed to fetch surveys", err);
+       // console.error("Failed to fetch surveys", err);
         setErrorMessage("Failed to fetch assigned surveys");
       }
     };
@@ -106,7 +106,7 @@ function UserDashboard() {
       setRedeemPoints("");
       fetchProfile(); // refresh points
     } catch (err) {
-      console.error("Redeem request failed", err); // Log error for debugging
+      //console.error("Redeem request failed", err); // Log error for debugging
       setNotification(err.response?.data?.message || "Redeem failed"); // Set error notification
       setNotificationType("error"); // Set notification type to error
     }
@@ -133,7 +133,7 @@ function UserDashboard() {
       const res = await api.get("/surveys/completed");
       setCompletedSurveys(res.data.surveys || []);
     } catch (err) {
-      console.error("Failed to fetch completed surveys", err);
+     // console.error("Failed to fetch completed surveys", err);
     }
   };
 
@@ -169,7 +169,7 @@ function UserDashboard() {
           const res = await api.get("/redemption/requests");
           setRedemptionRequests(res.data.requests || []);
         } catch (err) {
-          console.error("Failed to fetch redemption requests", err);
+          //console.error("Failed to fetch redemption requests", err);
         }
       };
       fetchRedemptionRequests();
@@ -272,7 +272,7 @@ function UserDashboard() {
         </li>
         <li>
           <a href="/user/redeemPoints" className="block bg-green-500 text-white text-center py-2 px-4 rounded-lg text-sm shadow hover:bg-green-600">
-            Redeem Points
+            View All Redeem Logs
           </a>
         </li>
       </ul>
@@ -392,7 +392,7 @@ function UserDashboard() {
                 </thead>
                    <tbody className="divide-y divide-gray-100">
                       {filteredSurveys.slice(0, 3).map((survey) => {
-  console.log(survey); // Log each survey object
+  //console.log(survey); // Log each survey object
   return (
     <tr key={survey._id} className="hover:bg-gray-50">
       <td className="py-3 px-4 font-medium">

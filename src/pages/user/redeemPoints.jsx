@@ -8,7 +8,7 @@ function RedeemPoints() {
   const [redemptionRequests, setRedemptionRequests] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [filterStatus, setFilterStatus] = useState("Approved");
+  const [filterStatus, setFilterStatus] = useState("All");
 
   // Fetch redemption requests
   useEffect(() => {
@@ -17,7 +17,7 @@ function RedeemPoints() {
         const res = await api.get("/redemption/requests");
         setRedemptionRequests(res.data.requests || []);
       } catch (err) {
-        console.error("Failed to fetch redemption requests", err);
+       // console.error("Failed to fetch redemption requests", err);
         setErrorMessage("Failed to fetch redemption requests");
       }
     };
@@ -72,19 +72,23 @@ function RedeemPoints() {
           <table className="table-auto w-full border-collapse border border-gray-300">
             <thead>
               <tr>
-                <th className="border border-gray-300 px-4 py-2">Date</th>
-                <th className="border border-gray-300 px-4 py-2">Points</th>
-                <th className="border border-gray-300 px-4 py-2">Status</th>
+                 <th className="bg-blue-50 border border-gray-300 px-4 py-2 text-left text-sm text-gray-600">Product ID</th>
+                <th className="bg-blue-50 border border-gray-300 px-4 py-2 text-center text-sm text-gray-600">Date</th>
+                <th className="bg-blue-50 border border-gray-300 px-4 py-2 text-center text-sm text-gray-600">Points</th>
+                <th className=" bg-blue-50 border border-gray-300 px-4 py-2 text-center text-sm text-gray-600">Status</th>
               </tr>
             </thead>
             <tbody>
               {filteredRequests.map((request) => (
                 <tr key={request._id}>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 text-left text-sm text-gray-600">
+                    {request._id}
+                  </td>
+                  <td className="border border-gray-300 px-4 py-2 text-center text-sm text-gray-600">
                     {new Date(request.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">{request.points}</td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-4 py-2 text-center text-sm text-gray-600">{request.points}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-center text-sm text-gray-600">
                     <span
                       className={`capitalize rounded-2xl px-2 py-1 ${
                         request.status.toLowerCase() === "pending"

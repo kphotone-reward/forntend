@@ -277,7 +277,7 @@ const fetchSpecialities = async () => {
       setSurveyTotalPages(res.data.pages);
       // console.log("Fetched Surveys:", res.data.surveys); // Log fetched surveys to verify data
     } catch (err) {
-      console.error("Failed to fetch surveys", err.response?.status, err.response?.data);
+      //console.error("Failed to fetch surveys", err.response?.status, err.response?.data);
     }
   }, [surveySearch, surveyPage, surveyLimit]);
 
@@ -287,7 +287,7 @@ const fetchSpecialities = async () => {
       const res = await api.get("/surveys/admin/stats");
       setStats(res.data);
     } catch (err) {
-      console.error("Failed to fetch stats", err.response?.status, err.response?.data);
+      //console.error("Failed to fetch stats", err.response?.status, err.response?.data);
     }
   }, []);
 
@@ -302,7 +302,7 @@ const fetchSpecialities = async () => {
       rejectedRedemptions: res.data.rejected
     });
   } catch (err) {
-    console.error("Failed to fetch redemption stats", err);
+    //console.error("Failed to fetch redemption stats", err);
   }
 }, []);
 
@@ -346,7 +346,7 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
     );
     setAssignedSurveys(res.data.surveys || []);
   } catch (err) {
-    console.error("Failed to fetch assigned surveys for add points", err);
+    //console.error("Failed to fetch assigned surveys for add points", err);
     setAssignedSurveys([]);
   }
 }, []);

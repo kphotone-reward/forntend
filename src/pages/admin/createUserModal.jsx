@@ -73,7 +73,7 @@ const fetchSuggestions = async () => {
 
       setError("Unexpected response from server");
     } catch (err) {
-      console.error("Create user error:", err);
+      //.error("Create user error:", err);
       setError(
         err.response?.data?.message ||
         "Failed to create user"

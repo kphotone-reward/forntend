@@ -17,7 +17,7 @@ function SurveyPage() {
         });
         setSurveys(res.data.surveys || []);
       } catch (err) {
-        console.error("Failed to fetch surveys", err);
+        //console.error("Failed to fetch surveys", err);
         setErrorMessage("Failed to fetch surveys");
       }
     };
