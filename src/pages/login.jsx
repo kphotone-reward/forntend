@@ -20,14 +20,15 @@ function Login() {
     }
 
     try {
-      const res = await api.post(`${import.meta.env.VITE_API_URL}/auth/login`, { email, password });
+      // const res = await api.post(`${import.meta.env.VITE_API_URL}/auth/login`, { email, password });
+       const res = await api.post(`/auth/login`, { email, password });
       const token = res.data.token
 
       localStorage.setItem("token", token)
 
       const user = jwtDecode(token)
-      console.log("LOGIN BODY:", { email, password });
-      console.log("USER FOUND:", user);
+     // console.log("LOGIN BODY:", { email, password });
+     // console.log("USER FOUND:", user);
 
       if (user.role === "admin") {
         navigate("/admin/dashboard")
@@ -41,84 +42,95 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="p-10 rounded-lg space-x-10">
-        <h3 className="text-3xl text-black font-bold mb-2 text-center">
-          Join Our Research Panel
-        </h3>
-        <p className="font-normal mb-5  text-center" style={{"fontSize":"16px"}}>
-          A global market research company providing end to end research solutions
-        </p>
-        <div className="flex items-center" style={{ padding: "40px" }}>
-          <div className="flex flex-col items-center mr-10 text-left gap-4">
-            <img
-              src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
-              alt="Logo"
-              style={{ width: 200, height: 50 }}
-            />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+  {/* Container: Max-width 100% on mobile, restricted on desktop */}
+  <div className="w-full max-w-4xl bg-white md:p-10 p-6 rounded-lg shadow-sm">
+    
+    {/* Heading: Smaller on mobile, Larger on Tablet+ */}
+    <h3 className="text-xl font-bold mb-2 text-center sm:text-3xl text-black">
+      Join Our Research Panel
+    </h3>
+    
+    {/* Paragraph: Scaled down for mobile */}
+   <p className="font-normal mb-8 text-center text-sm md:text-base text-gray-600">
+      A global market research company providing end to end research solutions
+    </p>
 
-            <ul
-              className="text-zinc-600 font-medium"
-              style={{ marginTop: "12px", lineHeight: "1.5" }}
-            >
-              <li>3+ Years of Experience</li>
-              <li>200+ Projects Completed</li>
-              <li>50+ Paid Clients Globally</li>
-              <li>500+ Physician Feedbacks Collected</li>
-              <li>$1M+ Rewards Paid</li>
-            </ul>
-          </div>
-          <div className="w-90 p-6 bg-white flex flex-col gap-3 border border-gray-200 rounded-lg">
-            {error && (
-              <p className="bg-red-100 text-red-700 text-sm py-2 mb-3 text-center">
-                {error}
-              </p>
-            )}
+    {/* Layout Switch: Column on mobile, Row on desktop */}
+    <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-8 md:gap-12">
+      
+      {/* Left Side: Stats and Logo */}
+      <div className="flex flex-col items-center md:items-start text-center md:text-left">
+        <img
+          src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
+          alt="Logo"
+          style={{ width: 180, height: "auto" }}
+          className="mb-4"
+        />
 
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full mb-4 p-2 border rounded"
-            />
+        <ul className="text-zinc-600 font-medium space-y-2 text-sm md:text-base">
+          <li>• 3+ Years of Experience</li>
+          <li>• 200+ Projects Completed</li>
+          <li>• 50+ Paid Clients Globally</li>
+          <li>• 500+ Physician Feedbacks</li>
+          <li>• $1M+ Rewards Paid</li>
+        </ul>
+      </div>
 
-            <div className="relative w-full mb-4">
-              <input
-                type={showPassword ? "text" : "password"} // Toggle input type
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <span
-                onClick={() => setShowPassword(!showPassword)} // Toggle visibility
-                className="absolute right-3 top-3 cursor-pointer text-gray-500"
-              >
-                {showPassword ? "\u{1F441}" : "\u{1F576}"} {/* Eye icon */}
-              </span>
-            </div>
+      {/* Right Side: Login Form */}
+      <div className="w-full max-w-md p-6 bg-white flex flex-col gap-3 border border-gray-200 rounded-lg shadow-sm">
+        {error && (
+          <p className="bg-red-100 text-red-700 text-sm py-2 mb-3 text-center rounded">
+            {error}
+          </p>
+        )}
 
-            <button
-              onClick={handleLogin}
-              className="w-full bg-blue-800 text-white font-semibold  py-2 rounded"
-            >
-              Login
-            </button>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+        />
 
-            <p style={{ marginTop: "12px", textAlign: "center" }}>
-              Don’t have an account?{" "}
-              <Link to="/signup" style={{ color: "#2563eb" }}>
-                Sign up
-              </Link>
-            </p>
-          </div>
+        <div className="relative w-full">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-3 cursor-pointer text-gray-500"
+          >
+            {showPassword ? "👁️" : "🕶️"}
+          </span>
         </div>
-        <footer className="text-center py-2 mt-4 text-gray-400 border-t border-b-gray-50">
-          © 2026 Kphotone Research. All rights reserved.
-        </footer>
+
+        <button
+          onClick={handleLogin}
+          className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 rounded-md transition-colors"
+        >
+          Login
+        </button>
+
+        <p className="mt-3 text-center text-sm text-gray-600">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-blue-600 font-medium hover:underline">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
+
+    {/* Footer */}
+    <footer className="text-center py-4 mt-10 text-xs text-gray-400 border-t border-gray-100">
+      © 2026 Kphotone Research. All rights reserved.
+    </footer>
+  </div>
+</div>
   );
 }
 

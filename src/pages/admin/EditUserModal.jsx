@@ -48,7 +48,8 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
       }
 
       await axios.put(
-         `${import.meta.env.VITE_API_URL}/auth/users/${user._id}`,
+        //  `${import.meta.env.VITE_API_URL}/auth/users/${user._id}`,
+          `/auth/users/${user._id}`,
         payload,
         {
           headers: {
@@ -76,8 +77,8 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <h3 style={{ fontSize: "22px", marginBottom: "16px" }}>
-          Edit User
+        <h3 style={{ fontSize: "18px", marginBottom: "16px" }}>
+          Change Password for : <span className="italic ">{user.name}</span> 
         </h3>
 
         <form onSubmit={handleSubmit}>
@@ -88,31 +89,54 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
             style={styles.inputDisabled}
           />
 
-          <input
+          {/* <input
             name="name"
             value={form.name}
             onChange={handleChange}
             placeholder="Name"
             required
             style={styles.input}
+          /> */}
+          <input
+            name="name"
+            value={form.name}
+            disabled
+            style={styles.inputDisabled}
+          />
+           <input
+            value={user.speciality}
+            disabled
+            style={styles.inputDisabled}
           />
 
-          <input
+          {/* <input
             name="phone"
             value={form.phone}
             onChange={handleChange}
             placeholder="Phone"
             required
             style={styles.input}
+          /> */}
+           <input
+            name="phone"
+            value={form.phone}
+           disabled
+            style={styles.inputDisabled}
           />
 
-          <input
+          {/* <input
             name="country"
             value={form.country}
             onChange={handleChange}
             placeholder="Country"
             required
             style={styles.input}
+          /> */}
+          <input
+            name="country"
+            value={form.country}
+           disabled
+            style={styles.inputDisabled}
           />
 
           <label style={styles.checkbox}>
@@ -151,12 +175,12 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
           
 
           {error && <p style={styles.error}>{error}</p>}
-
+<hr className="my-2" />
           <div style={styles.actions}>
-            <button type="button" onClick={onClose}>
+            <button type="button" onClick={onClose} className="border border-gray-300 py-2 px-4 rounded hover:bg-gray-100 transition-colors duration-200">
               Cancel
             </button>
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={loading} className="border border-gray-300 py-2 px-4 rounded hover:bg-gray-400 transition-colors duration-200">
               {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>

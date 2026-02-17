@@ -9,6 +9,7 @@ function SurveyPage() {
 
   // Fetch surveys assigned to the user
   useEffect(() => {
+    if(!user?._id)  return;
     const fetchSurveys = async () => {
       try {
         const res = await api.get("/surveys/assigned", {
@@ -22,7 +23,7 @@ function SurveyPage() {
     };
 
     fetchSurveys();
-  }, []);
+  }, [user?._id]);
 
   return (
     <div className="min-h-screen flex flex-col">

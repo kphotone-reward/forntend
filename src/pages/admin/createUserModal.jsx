@@ -1,5 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
+import { useEffect } from "react";
+// You can replace this with your actual API instance if you have one set up
+import api from "../../api/axios";
 
 const CreateUserModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -8,11 +11,31 @@ const CreateUserModal = ({ onClose, onSuccess }) => {
     phone: "",
     country: "",
     password: "",
+    speciality: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [specialityInput, setSpecialityInput] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+
+useEffect(() => {
+  if (specialityInput.length > 1) {
+    fetchSuggestions();
+  } else {
+    setSuggestions([]);
+  }
+}, [specialityInput]);
+
+
+const fetchSuggestions = async () => {
+  const res = await api.get("/specialities", {
+    params: { search: specialityInput }
+  });
+ setSuggestions(res.data.specialities);
+};
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,9 +53,8 @@ const CreateUserModal = ({ onClose, onSuccess }) => {
     setError("");
 
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/signup`, // OR admin API if you have it
-        form,
+      //const res = await axios.post(// `${import.meta.env.VITE_API_URL}/auth/signup`, 
+      const res = await api.post(`/auth/signup`,form,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -82,6 +104,38 @@ const CreateUserModal = ({ onClose, onSuccess }) => {
             onChange={handleChange}
             required
           />
+               <div className="mb-4 ">
+        
+  <input
+    type="text"
+    placeholder="Speciality"
+    value={specialityInput}
+    onChange={(e) => {
+      setSpecialityInput(e.target.value);
+      setForm({ ...form, speciality: e.target.value });
+    }}
+    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+    required
+  />
+
+  {suggestions.length > 0 && (
+    <ul className="absolute w-full bg-white border border-gray-200 rounded mt-1 max-h-40 overflow-y-auto shadow z-20">
+      {suggestions.map((s) => (
+        <li
+          key={s._id}
+          onClick={() => {
+            setSpecialityInput(s.name);
+            setForm({ ...form, speciality: s.name });
+            setSuggestions([]);
+          }}
+          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+        >
+          {s.name}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
           <input
             name="phone"
             placeholder="Phone"

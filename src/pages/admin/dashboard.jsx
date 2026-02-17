@@ -30,10 +30,13 @@ function AdminDashboard() {
     // Removed duplicate declaration of handleViewAssignedSurveys
   const [pointsToAdd, setPointsToAdd] = useState("")
   const [openCreateUser, setOpenCreateUser] = useState(false);
+
+  const [specialities, setSpecialities] = useState([]);
+  const [users, setUsers] = useState([])
   const [filterActive, setFilterActive] = useState(true); // State to toggle active/inactive filter
   const [selectedSurveyId, setSelectedSurveyId] = useState("");
 
-  const [users, setUsers] = useState([])
+  
   const [surveys, setSurveys] = useState([])
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -52,7 +55,7 @@ const [redeemSearch, setRedeemSearch] = useState("");
 const [redeemPage, setRedeemPage] = useState(1);
 const [redeemLimit, setRedeemLimit] = useState(10);
 const [redeemTotalPages, setRedeemTotalPages] = useState(1);
-const [redemptionRequests, setRedemptionRequests] = useState([]);
+const [redemptionRequests, setRedeemRequests] = useState([]);
 const[assignedSurveys,setAssignedSurveys]=useState([]);
 
 
@@ -78,6 +81,10 @@ const[assignedSurveys,setAssignedSurveys]=useState([]);
   
   const [assignedSurveysForUser, setAssignedSurveysForUser] = useState([])
 
+  const [selectedSpecialities, setSelectedSpecialities] = useState([]);
+  
+  const [assignedSpeciality, setAssignedSpeciality] = useState("selected") // New state for assigned speciality
+ 
 
   const [showEditModal, setShowEditModal] = useState(false)
   const [editSurvey, setEditSurvey] = useState({
@@ -88,15 +95,15 @@ const[assignedSurveys,setAssignedSurveys]=useState([]);
     startDate: "",
     endDate: ""
   })
-  console.log("Edit Survey State:", editSurvey); // Log the state before API call
+  // console.log("Edit Survey State:", editSurvey); // Log the state before API call
 
   const fetchRedeemRequests = useCallback(async () => {
   try {
     const res = await api.get("/redemption/admin/requests");
 
-    console.log("Admin redemption requests:", res.data);
+    // console.log("Admin redemption requests:", res.data);
 
-    setRedemptionRequests(res.data.requests || []);
+    setRedeemRequests(res.data.requests || []);
   } catch (err) {
     console.error(
       "Failed to fetch redemption requests",
@@ -140,11 +147,11 @@ const handleAddPoints = async () => {
       err.response?.data?.message || "Failed to add points"
     );
   }
-  console.log("ADD POINTS PAYLOAD", {
-  userId: selectedUser?._id,
-  surveyId: selectedSurveyId,
-  points: pointsToAdd
-});
+//   console.log("ADD POINTS PAYLOAD", {
+//   userId: selectedUser?._id,
+//   surveyId: selectedSurveyId,
+//   points: pointsToAdd
+// });
 };
 
 //fetch complete survey
@@ -152,6 +159,58 @@ const handleAddPoints = async () => {
 
 
 
+useEffect(() => {
+  if (assignedUsers.length > 0) {
+    // console.log("Assigned Users:");
+    assignedUsers.forEach((user) => {
+     //console.log(`User: ${user.name}, speciality: ${user.speciality}, Email: ${user.email},  Status: ${user.assignmentStatus}`);
+    });
+  }
+}, [assignedUsers]);
+
+useEffect(() => {
+  if (selectedSpecialities.length > 0) {
+    fetchfilleredUsers();
+  } else {
+    setUsers([]);
+  }
+},[selectedSpecialities]);
+
+const fetchfilleredUsers = async () => { 
+  
+  try {
+    const res = await api.get("/dashboard/filter-users", {
+      params: {
+        specialities: selectedSpecialities.join(",")        
+      }
+    });
+
+    //console.log("Filtered Users Response:", res.data);
+   // console.log("Fetching users for:", selectedSpecialities);
+
+    setUsers(res.data.users || []);
+  } catch (error) {
+    console.error("Error fetching filtered users:", error);
+    setUsers([]);
+  } 
+};
+
+const safeUsers = Array.isArray(users) ? users : [];
+
+useEffect(() => {
+  //console.log("FETCH SPECIALITIES EFFECT RUNNING");
+  fetchSpecialities();
+}, []);
+
+const fetchSpecialities = async () => {
+  try {
+    const res = await api.get("/specialities");
+    setSpecialities(res.data.specialities);
+    //console.log("Specialities API response:", res.data);
+  } catch (error) {
+    console.error("Error fetching specialities:", error);
+  }
+};
 
 
 
@@ -216,7 +275,7 @@ const handleAddPoints = async () => {
       });
       setSurveys(res.data.surveys);
       setSurveyTotalPages(res.data.pages);
-      console.log("Fetched Surveys:", res.data.surveys); // Log fetched surveys to verify data
+      // console.log("Fetched Surveys:", res.data.surveys); // Log fetched surveys to verify data
     } catch (err) {
       console.error("Failed to fetch surveys", err.response?.status, err.response?.data);
     }
@@ -260,10 +319,23 @@ const handleAddPoints = async () => {
     }
   }, [activeTab, fetchUsers, fetchSurveys, fetchStats, fetchRedeemStats])
 
+  useEffect(() => {
+    if (activeTab === "assign") {
+      setUser(null);  
+      setSelectedSpecialities([]);
+    }
+  }, [activeTab]);
+
 // status filitered users
-  const statusFilteredUsers = users.filter(
-  (user) => Boolean(user.isActive) === filterActive
-);
+ const statusFilteredUsers = Array.isArray(users)
+  ? users.filter(user => Boolean(user.isActive) === filterActive)
+  : [];
+{statusFilteredUsers && statusFilteredUsers.map((u) => (
+  <option key={u._id} value={u._id}>
+    {u.name} ({u.email})
+  </option>
+))}
+
 
 //surevey selection add points modal
 // Fetch ONLY assigned (not rewarded) surveys for selected user
@@ -362,7 +434,7 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
 
   try {
     const res = await api.get(`/surveys/assigned?userId=${user._id}`);
-    console.log("Assigned surveys API RAW:", res.data);
+    // console.log("Assigned surveys API RAW:", res.data);
     const fetchedAssignedSurveys = Array.isArray(res.data)
       ? res.data
       : res.data.surveys
@@ -396,7 +468,9 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
       try {
         const res = await api.post("/surveys/assign-multiple", {
           userIds: assignSurvey.userIds,
-          surveyId: assignSurvey.surveyId
+          surveyId: assignSurvey.surveyId,
+          specialities: selectedSpecialities, // Pass selected specialities for filtering
+          
         })
   
         setSuccessMessage(`Survey assigned to ${assignSurvey.userIds.length} user(s) successfully!`)
@@ -442,18 +516,32 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
   }
 
   // View survey details
+  
   const handleViewSurvey = async (survey) => {
-    try {
-      // Use the correct endpoint: /api/surveys/:id/users
-      const res = await api.get(`/surveys/${survey._id}/users`)
-      setSelectedSurvey(survey)
-      setAssignedUsers(res.data.users || [])
-      setShowDetailModal(true)
-    } catch (err) {
-      console.error("Failed to fetch survey details", err)
-      setErrorMessage("Failed to fetch survey details")
+  try {
+    const res = await api.get(`/surveys/${survey._id}/users`);
+    
+    // 1. Safeguard the data extraction
+    const usersList = res.data?.users || [];
+    
+    setSelectedSurvey(survey);
+    setAssignedUsers(usersList);
+    
+    // 2. This was your previous error - ensure it's defined in scope!
+    if (typeof setShowDetailModal === 'function') {
+      setShowDetailModal(true);
     }
+
+    // 3. Safe looping using the saved variable
+    usersList.forEach((user) => {
+      // console.log(`User: ${user.name}, Status: ${user.status}`);
+    });
+
+  } catch (err) {
+    console.error("Failed to fetch survey details", err);
+    setErrorMessage("Failed to fetch survey details");
   }
+};
 
   // Open edit modal
   const handleEditSurvey = (survey) => {
@@ -499,8 +587,8 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
     }
 
     try {
-      console.log("Submitting survey edit:", editSurvey);
-      await api.patch(`/surveys/${editSurvey.id}`, {
+      //  console.log("Submitting survey edit:", editSurvey);
+      await api.patch(`/surveys/update/${editSurvey.id}`, {
         title: editSurvey.title,
         surveyLink: editSurvey.surveyLink,
         rewardPoints: parseInt(editSurvey.rewardPoints),
@@ -523,9 +611,10 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
 
 const approveRedeem = async (id) => {
   try {
-    const res = await api.patch(`/redemption/${id}/approve`);
+    //const res = await api.patch(`/redemption/${id}/approve`);
+     const res = await api.patch(`/redemption/${id}/approve`);
 
-    setRedemptionRequests(prev =>
+    setRedeemRequests(prev =>
   prev.map(r => r._id === id ? { ...r, status: "approved" } : r)
 );
 
@@ -549,6 +638,7 @@ const rejectRedeem = async (id) => {
 
     setSuccessMessage("Redemption rejected");
   } catch (err) {
+    console.error("Reject Redeem Error:", err); // Debugging API error
     setErrorMessage(
       err.response?.data?.message || "Failed to reject redemption"
     );
@@ -558,7 +648,12 @@ const rejectRedeem = async (id) => {
 
   // Load redemption stats when overview tab is active  
 
-
+//start date and end date validation for create and edit survey
+const getCurrentDateTime = () => {
+  const now = new Date();
+  now.setSeconds(0, 0); // remove seconds & ms
+  return now.toISOString().slice(0, 16);
+};
 
 
   // Logout handler
@@ -577,29 +672,36 @@ const rejectRedeem = async (id) => {
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-100">
         {/* Header */}
-        <div className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600 mt-1">Welcome, Admin</p>
-            </div>
-            <button
+        <div className="bg-white shadow py-4 w-full">
+           <div className="flex justify-between items-start px-4">
+             <img
+            src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
+            alt="Logo"
+            className="w-24 md:w-36 h-auto" // Responsive logo size
+          />
+           <div className="flex items-center relative">
+            <span className="text-xs md:text-sm text-gray-950 mr-2 md:mr-4 capitalize truncate max-w-[100px] md:max-w-none">
+              Welcome, {user ? user.name : "Admin"}
+            </span>
+             <button
               onClick={handleLogout}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold transition"
             >
               Logout
             </button>
-          </div>
+           </div>
+           </div>
+          
         </div>
 
         {/* Tabs Navigation */}
-        <div className="bg-white shadow mt-6 mx-6 rounded">
-          <div className="flex border-b">
+        <div className="bg-white shadow px-5  rounded w-full">
+          <div className="flex border-b border-t border-gray-200">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === "overview"
-                  ? "text-blue-600 border-b-2 border-blue-600"
+                  ? "text-blue-600 border-b-4 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -607,9 +709,9 @@ const rejectRedeem = async (id) => {
             </button>
             <button
               onClick={() => setActiveTab("users")}
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === "users"
-                  ? "text-blue-600 border-b-2 border-blue-600"
+                  ? "text-blue-600 border-b-4 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -617,9 +719,9 @@ const rejectRedeem = async (id) => {
             </button>
             <button
               onClick={() => setActiveTab("surveys")}
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === "surveys"
-                  ? "text-blue-600 border-b-2 border-blue-600"
+                  ? "text-blue-600 border-b-4 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -627,9 +729,9 @@ const rejectRedeem = async (id) => {
             </button>
             <button
               onClick={() => setActiveTab("create")}
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === "create"
-                  ? "text-blue-600 border-b-2 border-blue-600"
+                  ? "text-blue-600 border-b-4 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -637,9 +739,9 @@ const rejectRedeem = async (id) => {
             </button>
             <button
               onClick={() => setActiveTab("assign")}
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-semibold ${
                 activeTab === "assign"
-                  ? "text-blue-600 border-b-2 border-blue-600"
+                  ? "text-blue-600 border-b-4 border-blue-600"
                   : "text-gray-600 hover:text-gray-800"
               }`}
             >
@@ -648,7 +750,7 @@ const rejectRedeem = async (id) => {
 
             <button
   onClick={() => setActiveTab("redeem")}
-  className={`px-6 py-3 font-medium ${
+  className={`px-6 py-3 font-semibold ${
     activeTab === "redeem"
       ? "text-blue-600 border-b-2 border-blue-600"
       : "text-gray-600 hover:text-gray-800"
@@ -660,7 +762,7 @@ const rejectRedeem = async (id) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className=" px-6 py-8">
         {/* Messages */}
         {successMessage && (
           <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
@@ -679,20 +781,20 @@ const rejectRedeem = async (id) => {
             <h2 className="text-2xl font-bold mb-6">Dashboard Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-white p-6 rounded shadow hover:shadow-lg transition">
-                <p className="text-gray-500 text-sm">Total Users</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">
+                <p className="text-sm capitalize text-gray-600 font-semibold">Total Users</p>
+                <p className="text-5xl font-bold text-blue-600 mt-2">
                   {stats.totalUsers}
                 </p>
               </div>
               <div className="bg-white p-6 rounded shadow hover:shadow-lg transition">
-                <p className="text-gray-500 text-sm">Total Surveys</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">
+                <p className="text-sm capitalize text-gray-600 font-semibold">Total Surveys</p>
+                <p className="text-5xl font-bold text-green-600 mt-2">
                   {stats.totalSurveys || surveys.length}
                 </p>
               </div>
               <div className="bg-white p-6 rounded shadow hover:shadow-lg transition">
-  <p className="text-gray-500 text-sm">Total Redeem Requests</p>
-  <p className="text-3xl font-bold text-red-600 mt-2">
+  <p className="text-sm capitalize text-gray-600 font-semibold">Total Redeem Requests</p>
+  <p className="text-5xl font-bold text-red-600 mt-2">
     {redeemStats.totalRedemptions}
   </p>
   <p className="text-xs text-gray-500 mt-1">
@@ -710,28 +812,30 @@ const rejectRedeem = async (id) => {
 
             {/* Recent Users */}
             <div className="bg-white rounded shadow p-6 mb-6">
-              <h3 className="text-xl font-bold mb-4">Recent Users</h3>
+              <h3 className="text-xl font-bold mb-4">Top 5 Recent Users</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="border-b">
-                    <tr>
+                  <thead className="border-b border-b-gray-300 text-sm uppercase text-gray-600">
+                    <tr className="bg-gray-50">
                       <th className="py-2 px-4">Name</th>
+                      <th className="py-2 px-4">Speciality</th>
                       <th className="py-2 px-4">Email</th>
                       <th className="py-2 px-4">Points</th>
-                      <th className="py-2 px-4">Role</th>
+                     
                     </tr>
                   </thead>
                   <tbody>
                     {users.slice(0, 5).map((u) => (
-                      <tr key={u._id} className="border-b hover:bg-gray-50 transition">
+                      <tr key={u._id} className="border-b border-b-gray-300 hover:bg-gray-50 transition">
                         <td className="py-2 px-4">{u.name}</td>
+                        <td className="py-2 px-4">{u.speciality}</td>
                         <td className="py-2 px-4">{u.email}</td>
                         <td className="py-2 px-4">
                           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded">
                             {u.points || 0}
                           </span>
                         </td>
-                        <td className="py-2 px-4">
+                        {/* <td className="py-2 px-4">
                           <span
                             className={`px-3 py-1 rounded text-white text-sm ${
                               u.role === "admin"
@@ -741,7 +845,7 @@ const rejectRedeem = async (id) => {
                           >
                             {u.role}
                           </span>
-                        </td>
+                        </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -751,21 +855,21 @@ const rejectRedeem = async (id) => {
 
             {/* Recent Surveys */}
             <div className="bg-white rounded shadow p-6">
-              <h3 className="text-xl font-bold mb-4">Recent Surveys</h3>
-              <div className="space-y-3">
-                {surveys.slice(0, 5).map((survey) => (
+              <h3 className="text-xl font-bold mb-4">Top 4 Recent Surveys</h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                {surveys.slice(0, 4).map((survey) => (
                   <div
                     key={survey._id}
-                    className="flex justify-between items-center p-3 border rounded hover:bg-gray-50"
+                    className="flex justify-between gap-4 items-center p-3 border border-gray-300 rounded hover:bg-gray-50  w-full md:w-auto transition "
                   >
                     <div>
                       <h4 className="font-semibold">{survey.title}</h4>
-                      <p className="text-sm text-gray-600">{survey.surveyLink}</p>
+                      {/* <p className="text-sm text-gray-600">{survey.surveyLink}</p> */}
                       <p className="text-xs text-gray-500 mt-1">
                         {new Date(survey.startDate).toLocaleDateString()} - {new Date(survey.endDate).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap">
                       <span className="bg-green-100 text-green-800 px-3 py-1 rounded">
                         {survey.rewardPoints} pts
                       </span>
@@ -786,7 +890,7 @@ const rejectRedeem = async (id) => {
         {activeTab === "users" && (
           <div>
             <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold mb-6">All Users</h2>
+            <h2 className="text-2xl font-bold ">All Users</h2>
             <button  className="bg-blue-600 text-white font-semibold px-4 py-2 rounded" onClick={() => setOpenCreateUser(true)}>
           + Create User
             </button>
@@ -834,7 +938,7 @@ const rejectRedeem = async (id) => {
   </select>
 
   {/* Active/Inactive Filter */}
-  <select
+  {/* <select
     value={filterActive}
     onChange={(e) => {
       setFilterActive(e.target.value === "true");
@@ -844,7 +948,7 @@ const rejectRedeem = async (id) => {
   >
     <option value="true">Active</option>
     <option value="false">Inactive</option>
-  </select>
+  </select> */}
 </div>
 
             <div className="bg-white rounded shadow overflow-hidden">
@@ -856,9 +960,10 @@ const rejectRedeem = async (id) => {
                 )} */}
 
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
+                  <thead className="bg-gray-50 border-b border-gray-300 text-sm uppercase text-gray-600">
                     <tr>
                       <th className="py-3 px-4 text-left font-semibold">Name</th>
+                       <th className="py-3 px-4 text-left font-semibold">Speciality</th>
                       <th className="py-3 px-4 text-left font-semibold">Email</th>
                       <th className="py-3 px-4 text-left font-semibold">Phone</th>
                       <th className="py-3 px-4 text-left font-semibold">Country</th>
@@ -870,8 +975,9 @@ const rejectRedeem = async (id) => {
                   </thead>
                   <tbody>
                     {users.map((u) => (
-                      <tr key={u._id} className="border-b hover:bg-gray-50 transition">
+                      <tr key={u._id} className="border-b border-gray-300 hover:bg-gray-50 transition">
                         <td className="py-3 px-4">{u.name}</td>
+                         <td className="py-3 px-4">{u.speciality}</td>
                         <td className="py-3 px-4">{u.email}</td>
                         <td className="py-3 px-4">{u.phone}</td>
                         <td className="py-3 px-4">{u.country}</td>
@@ -900,7 +1006,7 @@ const rejectRedeem = async (id) => {
                             {u.isActive ? "Active" : "Inactive"}
                           </span>
                         </td>
-                        <td className="p-3 border">
+                        <td className="p-3 ">
   {u.role !== "admin" && (
     <button
       onClick={() => {
@@ -922,10 +1028,10 @@ const rejectRedeem = async (id) => {
   )}
   {u.role !== "admin" && (
   <button
-    className="rounded-2xl bg-neutral-50 border px-4 py-1 border-blue-500 text-blue-700 hover:bg-blue-100"
+    className="rounded text-sm bg-neutral-50 border px-4 py-1 border-blue-500 text-blue-700 hover:bg-blue-100"
     onClick={() => handleViewAssignedSurveys(u)}
   >
-    View Assigned Surveys
+    Assigned Surveys
   </button>
   )}
 </td>
@@ -1229,6 +1335,7 @@ const rejectRedeem = async (id) => {
                   <input
                     type="datetime-local"
                     value={newSurvey.startDate}
+                    min={getCurrentDateTime()}
                     onChange={(e) =>
                       setNewSurvey({ ...newSurvey, startDate: e.target.value })
                     }
@@ -1244,9 +1351,11 @@ const rejectRedeem = async (id) => {
                   <input
                     type="datetime-local"
                     value={newSurvey.endDate}
-                    onchange={(e) =>
+                    min={newSurvey.startDate || getCurrentDateTime()}
+                    onChange={(e) =>
                       setNewSurvey({ ...newSurvey, endDate: e.target.value })
-                    } className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                     required
                   />
                   
@@ -1266,63 +1375,115 @@ const rejectRedeem = async (id) => {
         {/* Assign Survey Tab */}
         {activeTab === "assign" && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Assign Survey to Users</h2>
-            <div className="bg-white rounded shadow p-6 max-w-2xl">
+            <h2 className="text-2xl font-bold mb-2 ">Assign Survey to Users</h2>
+            <i className="mb-6 py-3 text-gray-500 text-sm">To assign a survey, first select the survey from the dropdown, then choose one or more specialities to filter relevant users. Only users matching the selected speciality will appear in the list below. You can either select users individually or use “Select All Filtered Users” to assign the survey to everyone shown. The system displays the total number of selected users before you confirm the assignment.</i>
+            <div className="bg-white rounded shadow p-6  w-full mt-3">
               <form onSubmit={handleAssignSurvey} className="space-y-6">
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Select Users (Multiple)
-                  </label>
-                  <select
-                    multiple
-                    value={assignSurvey.userIds}
-                    onChange={(e) => {
-                      const selected = Array.from(e.target.selectedOptions, option => option.value)
-                      setAssignSurvey({ ...assignSurvey, userIds: selected })
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 min-h-32"
-                    required
-                  >
-                    {users.map((u) => (
-                      <option key={u._id} value={u._id}>
-                        {u.name} ({u.email})
-                      </option>
-                    ))}
-                  <p className="text-xs text-gray-500 mt-2">Hold Ctrl (or Cmd) to select multiple users</p>
-                  {assignSurvey.userIds.length > 0 && (
-                    <p className="text-sm text-green-600 mt-2">{assignSurvey.userIds.length} user(s) selected</p>
-                  )}
-                  </select>
-                </div>
 
-                <div>
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Select Survey
-                  </label>
-                  <select
-                    value={assignSurvey.surveyId}
-                    onChange={(e) =>
-                      setAssignSurvey({ ...assignSurvey, surveyId: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                    required
-                  >
-                    <option value="">Choose a survey...</option>
-                    {surveys.map((s) => (
-                      <option key={s._id} value={s._id}>
-                        {s.title} ({s.rewardPoints} pts)
-                      </option>
-                    ))}
-                  </select>
-                </div>
+  {/* SELECT SURVEY FIRST */}
+  <div>
+    <label className="block text-gray-700 font-semibold mb-2">
+      Select Survey
+    </label>
+    <select
+      value={assignSurvey.surveyId}
+      onChange={(e) =>
+        setAssignSurvey({ ...assignSurvey, surveyId: e.target.value })
+      }
+      className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+      required
+    >
+      <option value="">Choose a survey...</option>
+      {surveys.map((s) => (
+        <option key={s._id} value={s._id}>
+          {s.title} ({s.rewardPoints} pts)
+        </option>
+      ))}
+    </select>
+  </div>
+ {/*  SELECT SPECIALITY */}
+  <div>
+  <label className="block text-gray-700 font-semibold mb-2">
+    Filter by Speciality
+  </label>
 
-                <button
-                  type="submit"
-                  className="w-full bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700 transition"
-                >
-                  Assign Survey
-                </button>
-              </form>
+  <select
+    multiple
+    className="w-full px-4 py-2 border rounded"
+    onChange={(e) => {
+  const values = Array.from(e.target.selectedOptions, option => option.value);
+  // console.log("Selected Specialities:", values);
+  setSelectedSpecialities(values);
+}}
+
+  >
+    {Array.isArray(specialities) &&
+      specialities.map((s) => (
+        <option key={s._id} value={s.name}>
+          {s.name}
+        </option>
+      ))}
+
+  </select>
+</div>
+
+{/* Select All Checkbox */}
+<div className="mb-2">
+  <label className="flex items-center space-x-2">
+    <input
+      type="checkbox"
+      checked={
+        safeUsers.length > 0 &&
+        assignSurvey.userIds.length === safeUsers.length
+      }
+      onChange={(e) => {
+        if (e.target.checked) {
+          const allUserIds = safeUsers.map((u) => u._id);
+          setAssignSurvey({ ...assignSurvey, userIds: allUserIds });
+        } else {
+          setAssignSurvey({ ...assignSurvey, userIds: [] });
+        }
+      }}
+    />
+    <span>Select All Filtered Users</span>
+  </label>
+</div>
+
+{/*  SELECT USERS */}
+<select
+  multiple
+  value={assignSurvey.userIds}
+  onChange={(e) => {
+    const selected = Array.from(
+      e.target.selectedOptions,
+      (option) => option.value
+    );
+    setAssignSurvey({ ...assignSurvey, userIds: selected });
+  }}
+  className="w-full px-4 py-2 border rounded min-h-32"
+>
+  {safeUsers.map((u) => (
+    <option key={u._id} value={u._id}>
+      {u.name} ({u.email})
+    </option>
+  ))}
+</select>
+{assignSurvey.userIds.length > 0 && (
+  <p className="text-sm text-green-600 mt-2">
+    {assignSurvey.userIds.length} user(s) selected
+  </p>
+)}
+
+
+  <button
+    type="submit"
+    className="w-full bg-green-600 text-white py-2 rounded font-semibold hover:bg-green-700 transition"
+  >
+    Assign Survey
+  </button>
+
+</form>
+
             </div>
           </div>
         )}
@@ -1361,6 +1522,7 @@ const rejectRedeem = async (id) => {
       <table className="w-full">
         <thead className="bg-gray-50 border-b">
           <tr>
+             <th className="py-3 px-4 text-left">Date</th>
             <th className="py-3 px-4 text-left">User</th>
             <th className="py-3 px-4 text-left">Email</th>
             <th className="py-3 px-4 text-left">Redeem Points</th>
@@ -1383,6 +1545,7 @@ const rejectRedeem = async (id) => {
           ) : (
             redemptionRequests.map((r) => (
               <tr key={r._id} className="border-b hover:bg-gray-50">
+                <td className="py-3 px-4 text-sm text-gray-600">{new Date(r.createdAt).toLocaleDateString()}</td>
                 <td className="py-3 px-4">{r.userId?.name}</td>
                 <td className="py-3 px-4">{r.userId?.email}</td>
                 <td className="py-3 px-4">
@@ -1450,12 +1613,11 @@ const rejectRedeem = async (id) => {
           <div className="bg-white rounded shadow-lg p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">{selectedSurvey.title}</h2>
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
+           <button onClick={() => {
+              // console.log("CLICKED CLOSE");
+              setShowDetailModal(prev => false);
+              }} className="text-gray-500 hover:text-gray-700 text-2xl"> × </button> 
+
             </div>
 
             <div className="space-y-4 mb-6">
@@ -1478,7 +1640,7 @@ const rejectRedeem = async (id) => {
                 <div>
                   <p className="text-gray-600 text-sm">Status</p>
                   <span
-                    className={`inline-block px-3 py-1 rounded text-white text-sm font-medium ${
+                    className={`inline-block px-3 py-1 rounded text-white text-sm font-medium capitalize ${
                       selectedSurvey.status === 'active'
                         ? 'bg-blue-500'
                         : selectedSurvey.status === 'paused'
@@ -1493,37 +1655,39 @@ const rejectRedeem = async (id) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-gray-600 text-sm">Start Date</p>
-                  <p className="font-semibold">{new Date(selectedSurvey.startDate).toLocaleString()}</p>
+                  <p className="font-semibold text-md">{new Date(selectedSurvey.startDate).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-gray-600 text-sm">End Date</p>
-                  <p className="font-semibold">{new Date(selectedSurvey.endDate).toLocaleString()}</p>
+                  <p className="font-semibold text-md">{new Date(selectedSurvey.endDate).toLocaleString()}</p>
                 </div>
               </div>
             </div>
 
-            <div className="border-t pt-6">
-              <h3 className="text-xl font-bold mb-4">Assigned Users ({assignedUsers.length})</h3>
+            <div className="border-t border-gray-200 pt-6">
+              <h3 className="text-lg font-bold mb-4">Assigned Users <span className="text-gray-600 text-sm">({assignedUsers.length})</span></h3>
               {assignedUsers.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No users assigned to this survey</p>
+                <p className="text-red-800 text-center py-2 bg-red-100 ">No users assigned to this survey</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b">
+                    <thead className="bg-gray-50 border-b border-gray-300 text-sm uppercase text-gray-600">
                       <tr>
                         <th className="py-2 px-3 text-left">Name</th>
                         <th className="py-2 px-3 text-left">Email</th>
+                        <th className="py-2 px-3 text-left">Speciality</th>                       
                         <th className="py-2 px-3 text-left">Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {assignedUsers.map((u) => (
-                        <tr key={u._id} className="border-b hover:bg-gray-50">
+                        <tr key={u._id} className="border-b border-gray-300 hover:bg-gray-50">
                           <td className="py-2 px-3">{u.name}</td>
                           <td className="py-2 px-3">{u.email}</td>
+                          <td className="py-2 px-3">{u.speciality}</td>
                           <td className="py-2 px-3">
                             <span
-                              className={`px-2 py-1 rounded text-xs font-medium text-white ${
+                              className={`px-2 py-1 rounded text-xs font-medium text-white capitalize ${
                                 u.assignmentStatus === 'rewarded'
                                   ? 'bg-green-500'
                                   : 'bg-blue-500'
@@ -1541,12 +1705,14 @@ const rejectRedeem = async (id) => {
             </div>
 
             <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowDetailModal(false)}
+              {/* <button
+                onClick={() => {
+                  setShowDetailModal(false);
+                }}
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded font-semibold transition"
               >
                 Close
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -1658,7 +1824,9 @@ const rejectRedeem = async (id) => {
                 >
                   Save Changes
                 </button>
+                {/* {console.log("Submitting survey edit:", editSurvey)} */}
               </div>
+               
             </form>
           </div>
         </div>

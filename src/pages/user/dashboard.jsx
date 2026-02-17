@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 
 function UserDashboard() {
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("completedSurveys");
 
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [surveys, setSurveys] = useState([]);
@@ -37,6 +38,14 @@ function UserDashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+  if (activeTab === "assign") {
+    setUser(null);
+    setSelectedSpecialities([]);
+  }
+}, [activeTab]);
+
+
   // Fetch assigned surveys
   useEffect(() => {
     const fetchAssignedSurveys = async () => {
@@ -55,6 +64,11 @@ function UserDashboard() {
       fetchAssignedSurveys();
     }
   }, [user]);
+
+  // Debugging: Log surveys data to verify assignmentStatus
+  useEffect(() => {
+    //console.log("Survey Data:", surveys);
+  }, [surveys]);
 
   // Logout
   const handleLogout = () => {
@@ -126,6 +140,72 @@ function UserDashboard() {
   fetchCompletedSurveys();
 }, []);
 
+  // State for redemption requests
+  const [redemptionRequests, setRedemptionRequests] = useState([]);
+
+  // Fetch redemption requests
+  useEffect(() => {
+    const fetchRedemptionRequests = async () => {
+      try {
+        const res = await api.get("/redemption/requests"); // Corrected endpoint
+        setRedemptionRequests(res.data.requests || []);
+        // Log the API response inside the try block
+        //console.log("Redemption Requests API Response:", res.data);
+      } catch (err) {
+        console.error("Failed to fetch redemption requests", err);
+      }
+    };
+
+    fetchRedemptionRequests();
+    //console.log("Redemption Requests API Response:", res.data); // Moved inside the try block
+  }, []);
+
+  // Add real-time updates for quick actions
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchProfile(); // Refresh user profile data
+      const fetchRedemptionRequests = async () => {
+        try {
+          const res = await api.get("/redemption/requests");
+          setRedemptionRequests(res.data.requests || []);
+        } catch (err) {
+          console.error("Failed to fetch redemption requests", err);
+        }
+      };
+      fetchRedemptionRequests();
+    }, 3000); // Refresh every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Separate pending and approved requests
+  const pendingRequests = redemptionRequests.filter(
+    (request) => request.status === "pending"
+  );
+  const approvedRequests = redemptionRequests.filter(
+    (request) => request.status === "approved"
+  );
+
+  // Filter surveys to show only those with rewarded status
+  const filteredSurveys = surveys.filter(
+    (survey) => survey.assignmentStatus === "rewarded"
+  );
+
+  // Calculate total earned points
+  const totalEarnedPoints = filteredSurveys.reduce(
+    (sum, survey) => sum + (survey.rewardPoints || 0),
+    0
+  );
+
+  // Log survey names and statuses
+  useEffect(() => {
+    if (filteredSurveys.length > 0) {
+      // console.log("Assigned Surveys:");
+      filteredSurveys.forEach((survey) => {
+        //console.log(`Survey Name: ${survey.title}, Status: ${survey.status}`);
+      });
+    }
+  }, [filteredSurveys]);
 
   // Clear notification after 3 seconds
   useEffect(() => {
@@ -140,35 +220,36 @@ function UserDashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header at the top */}
-      <header className="bg-white px-6  py-2 border-b border-gray-300 fixed top-0 left-0 w-full z-10">
-        <div className="flex justify-between items-center">
+      <header className="bg-white px-4 md:px-6 py-2 border-b border-gray-300 fixed top-0 left-0 w-full z-10">
+        <div className="flex justify-between items-center px-4">
           <img
             src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
             alt="Logo"
-            style={{ width: 150, height: 50 }}
+            className="w-24 md:w-36 h-auto" // Responsive logo size
           />
-          <div className="flex items-center relative">
-            <span className="text-sm/6 text-gray-950  mr-4 capitalize">
-              {user?.email?.split("@")[0]}
+          <div className="lex items-center relative">
+             <span className="text-xs md:text-sm text-gray-950 mr-2 md:mr-4 capitalize truncate max-w-[100px] md:max-w-none">
+              {user?.name}
             </span>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="bg-gray-200 hover:bg-gray-300 text-gray-400 px-1 py-1 rounded text-[12px]"
+              className="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded text-[10px] md:text-[12px]"
             >
               ▼
             </button>
             {showDropdown && (
               <div
                 ref={dropdownRef}
-                className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-md"
-                style={{ top: "100%" }}
+                className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded shadow-lg z-50"
+            style={{ top: "100%" }}
               >
-                <div className="px-4 py-2 text-gray-700">{user?.email}</div>
+                <div className="px-4 py-2 text-xs md:text-sm text-gray-700 border-b">{user?.email}</div>
+                 <div className="px-4 py-2 text-xs md:text-sm text-gray-700 border-b">{user?.speciality}</div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                 >
                   Logout
                 </button>
@@ -179,34 +260,30 @@ function UserDashboard() {
       </header>
 
       {/* Main content with left-side menu */}
-      <div className="flex flex-1 mt-16">
-        {/* Left-side menu */}
-        <aside className=" bg-gray-100 p-4 border-r border-gray-300" style={{ width: "250px" }}>
-          <ul className="space-y-4">
-            <li>
-              <a href="#dashboard" className="text-blue-600 hover:underline">
-                Dashboard
-              </a>
-            </li>
-            {/* <li>
-              <a href="/user/survey" className="text-blue-600 hover:underline">
-                Survey
-              </a>
-            </li> */}
-            <li>
-              <a href="/user/redeemPoints" className="text-blue-600 hover:underline">
-                Redeem Status
-              </a>
-            </li>
-          </ul>
-        </aside>
+      <div className="flex flex-col md:flex-row flex-1 mt-16">
+              {/* Sidebar: Moves to top on mobile for quick access */}
+      <aside className="w-full md:w-64 bg-gray-100 p-4 border-b md:border-b-0 md:border-r border-gray-300 order-2 md:order-none">
+      <h3 className="text-sm font-bold text-gray-700 mb-4 text-center md:text-left">Quick Actions</h3>
+      <ul className="grid grid-cols-2 md:grid-cols-1 gap-3">
+        <li>
+          <a href="#dashboard" className="block bg-blue-500 text-white text-center py-2 px-4 rounded-lg text-sm shadow hover:bg-blue-600">
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/user/redeemPoints" className="block bg-green-500 text-white text-center py-2 px-4 rounded-lg text-sm shadow hover:bg-green-600">
+            Redeem Points
+          </a>
+        </li>
+      </ul>
+      </aside>
 
-        {/* Right-side content */}
-        <main className="flex-1 p-6">
+        {/* Left-side menu */}
+        <main className="flex-1 p-4 md:p-6 order-1 md:order-none">
           {/* Notification */}
           {notification && (
             <div
-              className={`mb-4 p-4 rounded border ${
+              className={`mb-4 p-4 rounded border text-sm ${
                 notificationType === "success"
                   ? "bg-green-100 text-green-800 border-green-300"
                   : notificationType === "warning"
@@ -218,155 +295,238 @@ function UserDashboard() {
             </div>
           )}
 
-          {/* Welcome Message */}
-          <div className=" mb-6">
-            <h1 className="text-3xl font-bold">Welcome!</h1>
-            <p className="text-gray-500">Your rewards and recent surveys are ready to review.</p>
-          </div>
+         {/* Welcome Message */}
+      <div className="mb-6">
+        <h1 className="text-xl font-bold">Welcome!</h1>
+        <p className="text-gray-500 text-sm">Your rewards and surveys are ready.</p>
+      </div>
 
-          {/* Stats */}
-          <div className="flex justify-start gap-4 mb-6">
-            <div
-              className="bg-blue-500 p-4  shadow text-center flex justify-center flex-col"
-              style={{ width: "250px", borderRadius: "12px" }}
+            {/* Stats Section: Stacks vertically on small screens */}
+      <div className="flex flex-col lg:flex-row gap-4 mb-8">
+        {/* Reward Card */}
+        <div className="bg-blue-600 p-6 shadow-md text-center flex flex-col justify-center w-full lg:w-1/3 rounded-xl text-white">
+          <p className="text-blue-100 text-xs uppercase tracking-wider mb-1">Current Reward Points</p>
+          <p className="font-bold text-4xl">
+            {user?.points ?? 0}
+          </p>
+        </div>
+
+        {/* Redeem Card */}
+        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm w-full lg:flex-1">
+          <h3 className="mb-3 font-semibold text-sm text-gray-700">Redeem Points</h3>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              placeholder="Enter points (min 50)"
+              value={redeemPoints}
+              onChange={(e) => setRedeemPoints(e.target.value)}
+              className="p-2.5 bg-gray-50 rounded border border-gray-300 w-full outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={handleRedeem}
+              disabled={(user?.points ?? 0) < 50}
+              className={`whitespace-nowrap px-6 py-2 rounded text-sm font-bold text-white transition-colors ${
+                (user?.points ?? 0) < 50 ? "bg-gray-300 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              }`}
             >
-              <p className="text-white" style={{ fontSize: "18px" }}>
-                Total Reward Points
-              </p>
-              <p
-                className="text-white font-bold"
-                style={{
-                  fontSize: `${Math.max(
-                    4 - String(user?.points ?? 0).length * 0.5,
-                    2
-                  )}rem`,
-                }}
-              >
-                {user?.points ?? 0}
-              </p>
-            </div>
-
-            {/* Redeem Box */}
-            <div
-              className="bg-blue-50 p-4 rounded  border border-blue-300"
-              style={{ width: "400px", borderRadius: "12px" }}
-            >
-              <h3 className="mb-2 font-semibold" style={{ fontSize: "18px" }}>
-                Redeem Points
-              </h3>
-
-              <input
-                type="text"
-                placeholder="Enter points (min 50)"
-                value={redeemPoints}
-                onChange={(e) => setRedeemPoints(e.target.value)}
-                className="p-2 bg-white rounded border  w-full"
-                style={{ appearance: "textfield" }}
-                onWheel={(e) => e.target.blur()} // Prevent scroll increment/decrement
-              />
-
-              <p className="mt-2 text-sm text-gray-600">
-                Available Points: <b>{user?.points ?? 0}</b>
-              </p>
- <div className="flex justify-between flex-row-reverse items-center">
-              <button
-                onClick={handleRedeem}
-                disabled={(user?.points ?? 0) < 50}
-                className={`float-end mt-3 p-2 px-4 rounded text-white ${
-                  (user?.points ?? 0) < 50 ? "bg-gray-400" : "bg-blue-500"
-                }`}
-              >
-                Redeem Points
-              </button>
-
-              {(user?.points ?? 0) < 50 && (
-                <p className="text-red-500 italic mt-2" style={{fontSize:"12px"}}>
-                  Minimum 50 points required to redeem
-                </p>
-               
-              )}
-               </div>
-            </div>
+              Redeem Now
+            </button>
           </div>
-
-          {/* Recent Surveys */}
-          <div className="mt-12">
-            <h3 className="text-xl font-bold mb-4">Completed Surveys & Earned Points</h3>
-            
-            <hr className="mb-2 border-gray-300" />
-            <table className="w-full text-sm border-none">
-              <thead className="bg-gray-50 border-b border-gray-300">
-                <tr>
-                  <th className="py-2 px-3 text-left">Survey</th>
-                  <th className="py-2 px-3 text-left">Points</th>
-                  <th className="py-2 px-3 text-left">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {surveys.slice(0, 3).map((survey) => (
-                  <tr key={survey._id} className="border-b">
-                    <td className="py-2 px-3  text-black">{survey.title}</td>
-                    <td className="py-2 px-3  text-black">
-                      {survey.rewardPoints} pts
-                    </td>
-                    <td className="py-2 px-3 border-none text-gray-600 capitalize">
-                      <span
-                        className={`px-2 py-1 rounded text-white ${
-                          survey.status === "active"
-                            ? "bg-green-500"
-                            : "bg-blue-500"
-                        }`}
-                      >
-                        {survey.status === "active" ? "Completed" : survey.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {surveys.length === 0 && (
-              <p className="text-gray-500 mt-4">No surveys assigned</p>
+          <div className="flex justify-between items-center mt-2">
+            <p className="text-xs text-gray-500">Available: <b>{user?.points ?? 0}</b></p>
+            {(user?.points ?? 0) < 50 && (
+              <p className="text-red-500 italic text-[10px]">Min 50 points required</p>
             )}
           </div>
-
-          {/* Points Details Table */}
-          {/* <div className="bg-white rounded shadow p-6 mt-6">
-  <h3 className="text-xl font-bold mb-4">
-    Completed Surveys & Earned Points
-  </h3>
-
-  {completedSurveys.length === 0 ? (
-    <p className="text-gray-500">No completed surveys yet.</p>
-  ) : (
-    <table className="w-full text-sm">
-      <thead className="bg-gray-50 border-b">
-        <tr>
-          <th className="py-2 px-3 text-left">Survey</th>
-          <th className="py-2 px-3 text-left">Points</th>
-          <th className="py-2 px-3 text-left">Completed On</th>
-        </tr>
-      </thead>
-      <tbody>
-        {completedSurveys.map((s) => (
-          <tr key={s.surveyId} className="border-b">
-            <td className="py-2 px-3">{s.title}</td>
-            <td className="py-2 px-3 font-semibold text-green-600">
-              +{s.points}
-            </td>
-            <td className="py-2 px-3 text-gray-600">
-              {new Date(s.rewardedAt).toLocaleDateString()}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )}
-</div> */}
+        </div>
+      </div>
 
 
-          {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+
+        
+
+
+
+
+          {/* Tabs for Completed Surveys and Redemption Logs */}
+          <div className="mb-4 ">
+            <div className="flex border-b border-gray-300 overflow-x-auto">
+             <button
+            className={`whitespace-nowrap px-6 py-3 text-sm font-bold transition-all ${
+              activeTab === "completedSurveys" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("completedSurveys")}
+          >
+            Completed Surveys
+          </button>
+          <button
+            className={`whitespace-nowrap px-6 py-3 text-sm font-bold transition-all ${
+              activeTab === "redemptionLogs" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("redemptionLogs")}
+          >
+            Redemption Logs
+          </button>
+            </div>
+          <div className="mt-6">
+          {/* Scrollable Table Container */}
+          <div className="overflow-x-auto  bg-white"></div>
+
+            {activeTab === "completedSurveys" && (
+              <div>
+                {/* <h3 className="text-md font-bold">Completed Surveys</h3> */}
+                <h2 className="text-sm italic mb-4">
+                  Total Earned Points (Till Date): {totalEarnedPoints}
+                </h2>
+                <div className="overflow-y-auto max-h-96">
+                  {/* Completed Surveys Table */}
+                  
+                  <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-700 uppercase text-[10px] font-bold border-b">
+                  <tr>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Survey</th>
+                    <th className="py-3 px-4">Points</th>
+                    <th className="py-3 px-4">Status</th>
+                  </tr>
+                </thead>
+                   <tbody className="divide-y divide-gray-100">
+                      {filteredSurveys.slice(0, 3).map((survey) => {
+  
+  return (
+    <tr key={survey._id} className="hover:bg-gray-50">
+      <td className="py-3 px-4 font-medium">
+       {new Date(survey.endDate).toLocaleDateString()}
+      </td>
+      <td className="py-3 px-4 font-medium">{survey.title}</td>
+      <td className="py-3 px-4 font-medium">{survey.rewardPoints}</td>
+      <td className="py-3 px-4 text-gray-600 capitalize">
+        <span
+          className={`px-3 py-1 rounded text-sm font-medium ${
+            survey.status === "active"
+              ? "bg-green-50 border-green-500 text-green-600 border rounded-1xl"
+              : "bg-blue-50 border-blue-500 text-blue-600 border rounded-1xl"
+          }`}
+        >
+          {survey.status === "active" ? "Rewarded" : survey.status}
+        </span>
+      </td>
+    </tr>
+  );
+})}
+
+                      
+                      
+                    </tbody>
+                  </table>
+
+                  {filteredSurveys.length === 0 && (
+                    <p className="text-gray-500 mt-4">No surveys assigned</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "redemptionLogs" && (
+              <section className="mt-4">
+                {/* <h2 className="text-md font-bold">Redemption Requests Logs</h2> */}
+                <div className="overflow-y-auto max-h-96">
+                  {/* <hr className="my-2 border-gray-300" /> */}
+
+                  <h3 className="text-sm font-semibold ">
+                    Pending Requests 
+                  </h3>
+                  <p className="text-sm italic mb-4">Total Pending Points: {pendingRequests.reduce((sum, request) => sum + request.points, 0)}&nbsp; (when admin approved its will be deducted from your points)</p>
+                  {pendingRequests.length > 0 ? (
+                    <table className="w-full text-sm border border-gray-300 border-b-0 rounded-lg shadow-sm">
+                      <thead className="bg-gray-100 border-b border-gray-300">
+                        <tr>
+                          <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Request ID</th>
+                          <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Date</th>
+                          <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Points</th>
+                          <th className="py-2 px-4 text-left font-semibold text-gray-700">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {pendingRequests.map((request) => (
+                          <tr key={request._id} className="border-b">
+                            <td className="py-2 px-4 border-r border-gray-300 text-gray-800">{request._id}</td>
+                            <td className="py-2 px-4 border-r border-gray-300 text-gray-800">{new Date(request.createdAt).toLocaleDateString()}</td>
+                            <td className="py-2 px-4 border-r border-gray-300 text-gray-800">{request.points}</td>
+                            <td className="py-2 px-4 text-gray-800 capitalize">{request.status}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p className="text-gray-500 italic text-sm">No pending requests.</p>
+                  )}
+
+                  <hr className="my-4 border-gray-300" />
+
+                  <h3 className="text-sm font-semibold">Approved Requests</h3>
+                   <p className="mb-4 text-sm italic">Total Approved Points Till Date: {approvedRequests.reduce((sum, request) => sum + request.points, 0)}</p>
+                  {approvedRequests.length > 0 ? (
+                    <>
+                      <table className="w-full text-sm border border-gray-300 border-b-0 rounded-lg shadow-sm">
+                        <thead className="bg-gray-100 border-b border-gray-300">
+                          <tr>
+                            <th className="py-2 px-4 text-left border-r border-gray-300 text-gray-800 font-semibold">Request ID</th>
+                            <th className="py-2 px-4 text-left border-r border-gray-300 text-gray-800 font-semibold">Date</th>
+                            <th className="py-2 px-4 text-left border-r border-gray-300 font-semibold text-gray-700">Points</th>
+                            <th className="py-2 px-4 text-left font-semibold text-gray-700">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {approvedRequests.map((request) => (
+                            <tr key={request._id} className="border-b">
+                              <td className="py-2 px-4 border-r border-gray-300 text-gray-800">{request._id}</td>
+                              <td className="py-2 px-4 border-r border-gray-300 text-gray-800">
+                                {new Date(request.createdAt).toLocaleDateString()}
+                              </td> 
+                              <td className="py-2 px-4 border-r border-gray-300 text-gray-800">{request.points}</td>
+                              <td className="py-2 px-4 text-gray-800 capitalize">{request.status}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      
+                    </>
+                  ) : (
+                    <p className="text-sm">No approved requests.</p>
+                  )}
+                </div>
+              </section>
+            )}
+            
+            </div>
+          </div>
         </main>
+
+        {/* Right-side content */}
+        
+
+        {/* <aside className="bg-gray-100 p-4 border-r border-gray-300 rounded-lg shadow-md" style={{ width: "250px" }}>
+          <h3 className="text-md font-bold text-gray-700 mb-4 text-center">Quick Actions</h3>
+          <ul className="space-y-4">
+            <li>
+              <a
+                href="#dashboard"
+                className="block bg-blue-500 text-white text-center py-2 px-4 rounded-lg shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              >
+                 Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="/user/redeemPoints"
+                className="block bg-green-500 text-white text-center py-2 px-4 rounded-lg shadow hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300"
+              >
+                Redeem Points
+              </a>
+            </li>
+          </ul>
+        </aside> */}
       </div>
     </div>
   );
