@@ -61,6 +61,7 @@ const[assignedSurveys,setAssignedSurveys]=useState([]);
 
   // Form states
   const [newSurvey, setNewSurvey] = useState({
+    surveyCode: "",
     title: "",
     surveyLink: "",
     rewardPoints: "",
@@ -396,8 +397,9 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
     e.preventDefault()
     setErrorMessage("")
     setSuccessMessage("")
+    const normalizedSurveyCode = newSurvey.surveyCode?.trim() || ""
 
-    if (!newSurvey.title || !newSurvey.surveyLink || !newSurvey.rewardPoints || !newSurvey.startDate || !newSurvey.endDate) {
+    if (!normalizedSurveyCode || !newSurvey.title || !newSurvey.surveyLink || !newSurvey.rewardPoints || !newSurvey.startDate || !newSurvey.endDate) {
       setErrorMessage("All fields are required")
       return
     }
@@ -412,6 +414,7 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
 
     try {
       const res = await api.post("/surveys/create", {
+        surveyCode: normalizedSurveyCode,
         title: newSurvey.title,
         surveyLink: newSurvey.surveyLink,
         rewardPoints: parseInt(newSurvey.rewardPoints),
@@ -420,7 +423,7 @@ const fetchAssignedSurveysForPoints = useCallback(async (userId) => {
       })
 
       setSuccessMessage("Survey created successfully!")
-      setNewSurvey({ title: "", surveyLink: "", rewardPoints: "", startDate: "", endDate: "" })
+      setNewSurvey({ surveyCode: "" , title: "", surveyLink: "", rewardPoints: "", startDate: "", endDate: "" })
       fetchSurveys()
     } catch (err) {
       setErrorMessage(err.response?.data?.message || "Failed to create survey")
@@ -858,11 +861,11 @@ const getCurrentDateTime = () => {
               <h3 className="text-xl font-bold mb-4">Top 4 Recent Surveys</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 {surveys.slice(0, 4).map((survey) => (
-                  <div
-                    key={survey._id}
+                  <div  key={survey._id}
                     className="flex justify-between gap-4 items-center p-3 border border-gray-300 rounded hover:bg-gray-50  w-full md:w-auto transition "
                   >
                     <div>
+                      <h4 className="font-semibold">{survey.surveyCode}</h4>
                       <h4 className="font-semibold">{survey.title}</h4>
                       {/* <p className="text-sm text-gray-600">{survey.surveyLink}</p> */}
                       <p className="text-xs text-gray-500 mt-1">
@@ -1074,13 +1077,16 @@ const getCurrentDateTime = () => {
                   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded shadow-lg p-6 max-w-xl w-full mx-4 max-h-screen overflow-y-auto">
                       <div className="flex justify-between items-center mb-4">
+                        <div>
                         <h2 className="text-2xl font-bold">Assigned Surveys for {assignedSurveysUser?.name}</h2>
-                        <button
+                     <p className="text-gray-700 text-sm italic">Status(*Pending- Waiting for adding points, *Rewarded- Points added)</p>
+                       </div>
+                        {/* <button
                           onClick={() => setShowAssignedSurveysModal(false)}
                           className="text-gray-500 hover:text-gray-700 text-2xl"
                         >
                           ×
-                        </button>
+                        </button> */}
                       </div>
                       {assignedSurveysForUser.length === 0 ? (
                         <div className="text-center text-gray-500 py-6">No assigned surveys found.</div>
@@ -1088,7 +1094,9 @@ const getCurrentDateTime = () => {
                         <table className="w-full text-sm">
                           <thead className="bg-gray-50 border-b">
                             <tr>
-                              <th className="py-2 px-3 text-left">Survey Name</th>
+                               <th className="py-2 px-3 text-left">Date</th>
+                              <th className="py-2 px-3 text-left">Survey ID</th>
+                               <th className="py-2 px-3 text-left">Survey Name</th>
                               <th className="py-2 px-3 text-left">Points</th>
                               <th className="py-2 px-3 text-left">Status</th>
                             </tr>
@@ -1096,12 +1104,14 @@ const getCurrentDateTime = () => {
                           <tbody>
                             {assignedSurveysForUser.map((s, idx) => (
                               <tr key={idx} className="border-b hover:bg-gray-50">
+                                    <td className="py-2 px-3">{s.assignmentDate || "N/A"}</td>
+                                 <td className="py-2 px-3">{s.surveyCode}</td>
                                 <td className="py-2 px-3">{s.title}</td>
                                 <td className="py-2 px-3">{s.rewardPoints}</td>
                                 <td className="py-2 px-3">
                                 <span className={`px-2 py-1 rounded text-xs font-medium text-white ${
                                  (s.assignmentStatus || "pending") === "rewarded"? "bg-green-500": "bg-yellow-500"}`}>
-                                {(s.assignmentStatus || "pending") === "rewarded"? "Done": "Pending"}
+                                {(s.assignmentStatus || "pending") === "rewarded"? "Rewarded": "Pending"}
                                 </span>
                               </td>
                               </tr>
@@ -1161,6 +1171,7 @@ const getCurrentDateTime = () => {
                   <thead className="bg-gray-50 border-b">
                     <tr>
                       <th className="py-3 px-4 text-left font-semibold">Title</th>
+                      <th className="py-3 px-4 text-left font-semibold">Survey Code</th>
                       <th className="py-3 px-4 text-left font-semibold">Survey Link</th>
                       <th className="py-3 px-4 text-left font-semibold">Reward Points</th>
                       <th className="py-3 px-4 text-left font-semibold">Start Date</th>
@@ -1173,6 +1184,7 @@ const getCurrentDateTime = () => {
                     {surveys.map((survey) => (
                       <tr key={survey._id} className="border-b hover:bg-gray-50 transition">
                         <td className="py-3 px-4 font-semibold">{survey.title}</td>
+                        <td className="py-3 px-4">{survey.surveyCode || "-"}</td>
                         <td className="py-3 px-4">
                           <a
                             href={survey.surveyLink}
@@ -1294,6 +1306,21 @@ const getCurrentDateTime = () => {
                     required
                   />
                 </div>
+                <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                    Survey ID
+                  </label>
+                  <input
+                    type="text"
+                    value={newSurvey.surveyCode}
+                    onChange={(e) =>
+                      setNewSurvey({ ...newSurvey, surveyCode: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                    placeholder="Enter unique survey ID"
+                    required
+                  />
+                </div>
 
                 <div>
                   <label className="block text-gray-700 font-semibold mb-2">
@@ -1396,7 +1423,7 @@ const getCurrentDateTime = () => {
       <option value="">Choose a survey...</option>
       {surveys.map((s) => (
         <option key={s._id} value={s._id}>
-          {s.title} ({s.rewardPoints} pts)
+          {s.surveyCode} &nbsp;{s.title} ({s.rewardPoints} pts)
         </option>
       ))}
     </select>
@@ -1522,12 +1549,14 @@ const getCurrentDateTime = () => {
       <table className="w-full">
         <thead className="bg-gray-50 border-b">
           <tr>
-            <th className="py-3 px-4 text-left">Product ID</th>
              <th className="py-3 px-4 text-left">Date</th>
+            <th className="py-3 px-4 text-left">Survey ID</th>
+             <th className="py-3 px-4 text-left">Survey</th>
+            
             <th className="py-3 px-4 text-left">User</th>
             <th className="py-3 px-4 text-left">Email</th>
             <th className="py-3 px-4 text-left">Redeem Points</th>
-            <th className="py-3 px-4 text-left">After Redeem Points</th>
+             <th className="py-3 px-4 text-left">After Redeem Points</th> 
             <th className="py-3 px-4 text-left">Status</th>
             <th className="py-3 px-4 text-left">Action</th>
           </tr>
@@ -1546,8 +1575,22 @@ const getCurrentDateTime = () => {
           ) : (
             redemptionRequests.map((r) => (
               <tr key={r._id} className="border-b hover:bg-gray-50">
-                <td className="py-3 px-4">{r._id}</td>
-                <td className="py-3 px-4 text-sm text-gray-600">{new Date(r.createdAt).toLocaleDateString()}</td>
+                 <td className="py-3 px-4 text-sm text-gray-600">{new Date(r.createdAt).toLocaleDateString()}</td>
+                 <td className="py-3 px-4">
+                  {r.assignedSurvey
+                    ? `${r.assignedSurvey.surveyCode || ""}  `
+                    : r.assignedSurveys?.length
+                    ? `All rewarded surveys (${r.assignedSurveys.length})`
+                    : "-"}
+                </td>
+                 <td className="py-3 px-4">
+                  {r.assignedSurvey
+                    ? `${r.assignedSurvey.title || ""} `
+                    : r.assignedSurveys?.length
+                    ? `All rewarded surveys (${r.assignedSurveys.length})`
+                    : "-"}
+                </td>
+               
                 <td className="py-3 px-4">{r.userId?.name}</td>
                 <td className="py-3 px-4">{r.userId?.email}</td>
                 <td className="py-3 px-4">
@@ -1555,7 +1598,7 @@ const getCurrentDateTime = () => {
                     {r.points}
                   </span>
                 </td>
-                <td className="py-3 px-4">{r.userId?.points}</td>
+                 <td className="py-3 px-4">{r.userId?.points}</td> 
                 <td className="py-3 px-4 capitalize">{r.status}</td>
                 <td className="py-3 px-4 flex gap-2">
                   {r.status === "pending" && (
@@ -1613,34 +1656,38 @@ const getCurrentDateTime = () => {
       {showDetailModal && selectedSurvey && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded shadow-lg p-6 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">{selectedSurvey.title}</h2>
+            <div className="flex justify-between items-center border-b border-b-blue-100 py-2 mb-4">
+              <div>
+              <h3 className="text-sm  mb-2 text-gray-400"><span className="px-2 py-1 rounded-md  bg-blue-100 border border-blue-200 text-gray-800">{selectedSurvey.surveyCode}</span></h3>
+              <h2 className="text-2lg text-gray-800 font-bold">{selectedSurvey.title}</h2>
+              </div>
            <button onClick={() => {
               // console.log("CLICKED CLOSE");
               setShowDetailModal(prev => false);
-              }} className="text-gray-500 hover:text-gray-700 text-2xl"> × </button> 
+              }} className="text-gray-300 hover:text-gray-700 text-2xl"> × </button> 
 
             </div>
+           
 
             <div className="space-y-4 mb-6">
               <div>
-                <p className="text-gray-600 text-sm">Survey Link</p>
+                <p className="text-gray-400 text-sm">Survey Link</p>
                 <a
                   href={selectedSurvey.surveyLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline break-all"
+                  className="text-blue-500 hover:underline text-lg font-medium break-all"
                 >
                   {selectedSurvey.surveyLink}
                 </a>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-600 text-sm">Reward Points</p>
-                  <p className="font-semibold text-lg">{selectedSurvey.rewardPoints}</p>
+                  <p className="text-gray-400 text-sm">Reward Points</p>
+                  <p className="font-semibold text-lg text-gray-500">{selectedSurvey.rewardPoints}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">Status</p>
+                  <p className="text-gray-400 text-sm">Status</p>
                   <span
                     className={`inline-block px-3 py-1 rounded text-white text-sm font-medium capitalize ${
                       selectedSurvey.status === 'active'
@@ -1656,24 +1703,24 @@ const getCurrentDateTime = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-600 text-sm">Start Date</p>
-                  <p className="font-semibold text-md">{new Date(selectedSurvey.startDate).toLocaleString()}</p>
+                  <p className="text-gray-400 text-sm">Start Date</p>
+                  <p className="font-semibold text-lg text-gray-500">{new Date(selectedSurvey.startDate).toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">End Date</p>
-                  <p className="font-semibold text-md">{new Date(selectedSurvey.endDate).toLocaleString()}</p>
+                  <p className="text-gray-400 text-sm">End Date</p>
+                  <p className="font-semibold text-lg text-gray-500">{new Date(selectedSurvey.endDate).toLocaleString()}</p>
                 </div>
               </div>
             </div>
 
             <div className="border-t border-gray-200 pt-6">
-              <h3 className="text-lg font-bold mb-4">Assigned Users <span className="text-gray-600 text-sm">({assignedUsers.length})</span></h3>
+              <h3 className="text-lg font-bold mb-4">Assigned Users <span className="text-gray-400 text-sm">({assignedUsers.length})</span></h3>
               {assignedUsers.length === 0 ? (
                 <p className="text-red-800 text-center py-2 bg-red-100 ">No users assigned to this survey</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-300 text-sm uppercase text-gray-600">
+                    <thead className="bg-gray-50 border-b border-gray-300 text-sm uppercase text-gray-500">
                       <tr>
                         <th className="py-2 px-3 text-left">Name</th>
                         <th className="py-2 px-3 text-left">Email</th>
@@ -1736,6 +1783,19 @@ const getCurrentDateTime = () => {
 
             <form onSubmit={handleSubmitEdit} className="space-y-6">
               <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Survey ID
+                </label>
+                 <input
+                  type="text"
+                  value={editSurvey.surveyCode}
+                  disabled
+                  className="w-full px-4 py-2"
+                  
+                />
+              </div>
+              <div>
+                
                 <label className="block text-gray-700 font-semibold mb-2">
                   Survey Title
                 </label>

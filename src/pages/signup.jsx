@@ -95,45 +95,29 @@ const fetchSuggestions = async () => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+   <div className="w-full flex items-start justify-start ">
+   <div className="w-3/5 banner-bg h-screen  items-center justify-center relative"> 
+   <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
+          alt="Logo"
+          style={{ width: 250, height: "auto" }}
+          className="mb-4 absolute bottom-1 left-5"/>
+    </div>
   {/* Added max-width and removed fixed space-x to prevent mobile overflow */}
-  <div className="w-full max-w-5xl bg-white p-6 md:p-10 rounded-lg shadow-sm">
+ <div className="w-2/5  h-screen md:py-6 px-8 flex flex-col justify-center">
+   
     
     {/* Responsive Heading: smaller on mobile */}
-    <h3 className="text-xl md:text-3xl text-black font-bold mb-2 text-center">
+   <h3 className="text-2xl font-bold   sm:text-3xl text-black">
       Join Our Research Panel
     </h3>
-    
-    {/* Responsive Subtext */}
-    <p className="font-normal mb-8 text-center text-sm md:text-base text-gray-600">
-      A global market research company providing end to end research solutions
+    <p className="font-normal mb-4 text-md md:text-base text-gray-600">
+      Share their insights and earn rewards.
     </p>
+    
 
-    {/* Flex container: Column on mobile, Row on desktop */}
-    <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-8 md:gap-12">
-      
-      {/* Left Column: Logo and Stats */}
-      <div className="flex flex-col items-center md:items-start text-center md:text-left">
-        <img
-          src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
-          alt="Logo"
-          style={{ width: 180, height: "auto" }}
-          className="mb-4"
-        />
-
-        <ul className="text-zinc-600 font-medium space-y-2 text-sm md:text-base">
-          <li>• 3+ Years of Experience</li>
-          <li>• 200+ Projects Completed</li>
-          <li>• 50+ Paid Clients Globally</li>
-          <li>• 500+ Physician Feedbacks</li>
-          <li>• $1M+ Rewards Paid</li>
-        </ul>
-      </div>
-
-      {/* Right Column: The Form */}
-      <form
+     <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md p-6 bg-white flex flex-col gap-3 border border-gray-200 rounded-lg shadow-sm"
+        className="w-full   bg-white flex flex-col gap-3 "
       >
         {message && (
           <p className={`p-2 text-center rounded text-sm ${
@@ -150,7 +134,7 @@ const fetchSuggestions = async () => {
           value={form.name}
           onChange={handleChange}
           required
-          className="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full p-3 text-2md  text-black font-semibold border rounded focus:ring-2 focus:ring-blue-500 outline-none"
         />
 
         <input
@@ -160,7 +144,7 @@ const fetchSuggestions = async () => {
           value={form.email}
           onChange={handleChange}
           required
-          className="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full p-3 text-2md border  text-black font-semibold rounded focus:ring-2 focus:ring-blue-500 outline-none"
         />
 
         <div className="relative">
@@ -173,7 +157,7 @@ const fetchSuggestions = async () => {
       setSpecialityInput(e.target.value);
       setForm({ ...form, speciality: e.target.value });
     }}
-    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+    className="w-full p-3 text-2md border  text-black font-semibold border-gray-300 rounded focus:outline-none focus:border-blue-500"
     required
   />
 
@@ -187,7 +171,7 @@ const fetchSuggestions = async () => {
             setForm({ ...form, speciality: s.name });
             setSuggestions([]);
           }}
-          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+          className="p-3 text-2md  text-black font-semibold hover:bg-gray-100 cursor-pointer "
         >
           {s.name}
         </li>
@@ -195,30 +179,26 @@ const fetchSuggestions = async () => {
     </ul>
   )}
 </div>
-
-
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input
+<input
               type="text"
               name="phone"
               placeholder="Phone Number"
               value={form.phone}
               onChange={handleChange}
               required
-              className="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full p-3 text-2md  text-black font-semibold border rounded focus:ring-2 focus:ring-blue-500 outline-none"
             />
 
-            <input
+             <input
               type="text"
               name="country"
               placeholder="Country"
               value={form.country}
               onChange={handleChange}
               required
-              className="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full p-3 text-2md  text-black font-semibold border rounded focus:ring-2 focus:ring-blue-500 outline-none"
             />
-        </div>
+     
 
         <div className="relative w-full">
           <input
@@ -228,11 +208,11 @@ const fetchSuggestions = async () => {
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full p-2.5 border rounded focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full p-3 text-2md  text-black font-semibold border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
           <span
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 cursor-pointer text-gray-500"
+             className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-xl text-gray-500"
           >
             {showPassword ? "👁️" : "🕶️"}
           </span>
@@ -241,7 +221,7 @@ const fetchSuggestions = async () => {
         <button
           type="submit"
           disabled={loading || !form.name || !form.email ||!form.speciality || !form.phone || !form.country || !form.password}
-          className={`w-full py-2.5 rounded font-semibold transition-colors ${
+          className={`w-full py-3 rounded font-semibold transition-colors text-2md ${
             loading || !form.name || !form.email || !form.speciality || !form.phone || !form.country || !form.password
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-blue-800 text-white hover:bg-blue-900"
@@ -250,18 +230,19 @@ const fetchSuggestions = async () => {
           {loading ? "Creating..." : "Create Account"}
         </button>
 
-        <p className="mt-3 text-center text-sm">
+        <p className=" text-center text-2md text-gray-600">
           Already have an account?{" "}
           <Link to="/login" className="text-blue-600 font-medium hover:underline">
             Login
           </Link>
         </p>
       </form>
-    </div>
+
+    
 
     {/* Footer */}
-    <footer className="text-center py-4 mt-8 text-xs text-gray-400 border-t border-gray-100">
-      © 2026 Kphotone Research. All rights reserved.
+    <footer className="text-center py-4 mt-2 text-md text-gray-400 border-t border-gray-100">
+      © 2026 <span className="text-blue-400 font-semibold">Kphotone</span> Research. All rights reserved.
     </footer>
   </div>
 </div>

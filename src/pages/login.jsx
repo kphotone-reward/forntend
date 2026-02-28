@@ -42,43 +42,51 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-  {/* Container: Max-width 100% on mobile, restricted on desktop */}
-  <div className="w-full max-w-4xl bg-white md:p-10 p-6 rounded-lg shadow-sm">
-    
-    {/* Heading: Smaller on mobile, Larger on Tablet+ */}
-    <h3 className="text-xl font-bold mb-2 text-center sm:text-3xl text-black">
-      Join Our Research Panel
-    </h3>
-    
-    {/* Paragraph: Scaled down for mobile */}
-   <p className="font-normal mb-8 text-center text-sm md:text-base text-gray-600">
-      A global market research company providing end to end research solutions
-    </p>
-
-    {/* Layout Switch: Column on mobile, Row on desktop */}
-    <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-8 md:gap-12">
-      
-      {/* Left Side: Stats and Logo */}
-      <div className="flex flex-col items-center md:items-start text-center md:text-left">
-        <img
+    <div className="w-full flex items-start justify-center  bg-white">
+     <div className="w-3/5 banner-bg h-screen  items-center justify-center relative">  
+    {/* <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 bg-amber-50 bg-opacity-80 p-6 rounded-lg shadow-md">
+       <img
           src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
           alt="Logo"
-          style={{ width: 180, height: "auto" }}
+          style={{ width: 300, height: "auto" }}
           className="mb-4"
         />
+      <h3 className="text-xl font-bold mb-2 text-center sm:text-3xl text-black">
+      Join Our Research Panel
 
-        <ul className="text-zinc-600 font-medium space-y-2 text-sm md:text-base">
+    </h3>
+    <ul className="text-zinc-600 font-medium space-y-2 text-lg md:text-base">
           <li>• 3+ Years of Experience</li>
           <li>• 200+ Projects Completed</li>
           <li>• 50+ Paid Clients Globally</li>
           <li>• 500+ Physician Feedbacks</li>
           <li>• $1M+ Rewards Paid</li>
         </ul>
-      </div>
+    </div> */}
+  <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
+          alt="Logo"
+          style={{ width: 250, height: "auto" }}
+          className="mb-4 absolute bottom-1 left-5"/>
+       
+    
 
-      {/* Right Side: Login Form */}
-      <div className="w-full max-w-md p-6 bg-white flex flex-col gap-3 border border-gray-200 rounded-lg shadow-sm">
+      
+      </div>
+  {/* Container: Max-width 100% on mobile, restricted on desktop */}
+  <div className="w-2/5  h-screen md:py-6 px-8 flex flex-col justify-center">
+    
+    {/* Heading: Smaller on mobile, Larger on Tablet+ */}
+    <h3 className="text-2xl font-bold   sm:text-3xl text-black">
+      Login to Your Account
+    </h3>
+    
+    {/* Paragraph: Scaled down for mobile */}
+   <p className="font-normal mb-8  text-md md:text-base text-gray-600">
+     Share their insights and earn rewards.
+    </p>
+
+    {/* Layout Switch: Column on mobile, Row on desktop */}
+    <div className="w-full max-w-md  bg-white flex flex-col gap-4 items-center ">
         {error && (
           <p className="bg-red-100 text-red-700 text-sm py-2 mb-3 text-center rounded">
             {error}
@@ -90,7 +98,7 @@ function Login() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+          className="w-full p-4 text-lg text-black font-semibold border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
         />
 
         <div className="relative w-full">
@@ -99,11 +107,11 @@ function Login() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
+            className="w-full p-4 text-lg text-black font-semibold border rounded-md focus:ring-2 focus:ring-blue-500 outline-none letter-spacing-1"
           />
           <span
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 cursor-pointer text-gray-500"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-xl text-gray-500"
           >
             {showPassword ? "👁️" : "🕶️"}
           </span>
@@ -111,23 +119,22 @@ function Login() {
 
         <button
           onClick={handleLogin}
-          className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-2.5 rounded-md transition-colors"
+          className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-3 rounded-md transition-colors  text-lg"
         >
-          Login
+          Sign In Account
         </button>
 
-        <p className="mt-3 text-center text-sm text-gray-600">
+        <p className=" text-center text-2md text-gray-600">
           Don’t have an account?{" "}
           <Link to="/signup" className="text-blue-600 font-medium hover:underline">
             Sign up
           </Link>
         </p>
       </div>
-    </div>
 
     {/* Footer */}
-    <footer className="text-center py-4 mt-10 text-xs text-gray-400 border-t border-gray-100">
-      © 2026 Kphotone Research. All rights reserved.
+    <footer className="text-center py-4 mt-10 text-md text-gray-400 border-t border-gray-100">
+      © 2026 <span className="text-blue-400 font-semibold">Kphotone</span> Research. All rights reserved.
     </footer>
   </div>
 </div>

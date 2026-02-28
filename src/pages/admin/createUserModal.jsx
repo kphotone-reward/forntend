@@ -96,6 +96,7 @@ const fetchSuggestions = async () => {
             onChange={handleChange}
             required
           />
+          
           <input
             name="email"
             type="email"
@@ -114,12 +115,12 @@ const fetchSuggestions = async () => {
       setSpecialityInput(e.target.value);
       setForm({ ...form, speciality: e.target.value });
     }}
-    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+    className=" w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
     required
   />
 
   {suggestions.length > 0 && (
-    <ul className="absolute w-full bg-white border border-gray-200 rounded mt-1 max-h-40 overflow-y-auto shadow z-20">
+    <ul className="absolute  bg-white border border-gray-200 rounded mt-1 max-h-40 overflow-y-auto shadow z-20">
       {suggestions.map((s) => (
         <li
           key={s._id}

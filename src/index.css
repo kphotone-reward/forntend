@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&display=swap');
+
 
 @import "tailwindcss";
 
@@ -8,7 +8,7 @@ button {
 body {
   font-size: 13px !important;
  font-family: 'Roboto', sans-serif;
- color:#333
+ color:#333;
 }
 input, select, textarea {
    border: silver solid 1px; 
@@ -21,13 +21,33 @@ input, select, textarea {
   border-radius: 5px;
   margin-bottom: 15px;
 }
+.text-2lg{
+  font-size: 20px !important;
+}
 .text-lg{
   font-size: 18px !important;
+}
+.text-2md{
+  font-size: 16px !important;
 }
 .text-md{
   font-size: 14px !important;
 }
 .text-sm{
   font-size: 12px !important;
+}
+.text-2lg{
+  font-size: 22px !important;
+}
+
+.banner-bg {
+  background-image: url('./assets/kepthone-banner.jpg');
+  background-size: cover;
+  background-position: left center;
+ 
+}
+.sign-bg{
+  background: #ebf0f1;
+  
 }
 

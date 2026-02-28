@@ -48,8 +48,8 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
       }
 
       await axios.put(
-        //  `${import.meta.env.VITE_API_URL}/auth/users/${user._id}`,
-          `/auth/users/${user._id}`,
+          `${import.meta.env.VITE_API_URL}/auth/users/${user._id}`,
+          //`/auth/users/${user._id}`,
         payload,
         {
           headers: {
