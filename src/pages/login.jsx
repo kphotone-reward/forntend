@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import api from "../api/axios"
 import { jwtDecode } from "jwt-decode"
+import ForgotPasswordModal from "../components/ForgotPasswordModal"
 
 
 function Login() {
@@ -11,6 +12,7 @@ function Login() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -63,10 +65,15 @@ function Login() {
           <li>• $1M+ Rewards Paid</li>
         </ul>
     </div> */}
-  <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
+  <div className="mb-4 absolute bottom-1 left-5">
+   <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
           alt="Logo"
           style={{ width: 250, height: "auto" }}
-          className="mb-4 absolute bottom-1 left-5"/>
+          />
+          <p className="text-left py-4 mt-2 text-md text-gray-400 border-t border-gray-100">
+      © 2026 <span className="text-blue-400 font-semibold">Kphotone</span> Research. All rights reserved.
+    </p>
+    </div>
        
     
 
@@ -88,7 +95,7 @@ function Login() {
     {/* Layout Switch: Column on mobile, Row on desktop */}
     <div className="w-full max-w-md  bg-white flex flex-col gap-4 items-center ">
         {error && (
-          <p className="bg-red-100 text-red-700 text-sm py-2 mb-3 text-center rounded">
+          <p className="bg-red-100 w-full p-4 text-lg font-medium text-red-700  py-2 mb-3 text-center rounded">
             {error}
           </p>
         )}
@@ -117,6 +124,14 @@ function Login() {
           </span>
         </div>
 
+          
+         
+        
+        <p className="w-full text-right text-lg text-blue-600 cursor-pointer hover:underline " onClick={() => setShowForgotPasswordModal(true)}>
+          Forgot Password?
+        </p>
+        
+
         <button
           onClick={handleLogin}
           className="w-full bg-blue-800 hover:bg-blue-900 text-white font-semibold py-3 rounded-md transition-colors  text-lg"
@@ -133,10 +148,13 @@ function Login() {
       </div>
 
     {/* Footer */}
-    <footer className="text-center py-4 mt-10 text-md text-gray-400 border-t border-gray-100">
+    {/* <footer className="text-leftpy-4 mt-10 text-md text-gray-400 border-t border-gray-100">
       © 2026 <span className="text-blue-400 font-semibold">Kphotone</span> Research. All rights reserved.
-    </footer>
+    </footer> */}
   </div>
+ {showForgotPasswordModal && (
+   <ForgotPasswordModal onClose={() => setShowForgotPasswordModal(false)} />
+ )}
 </div>
   );
 }

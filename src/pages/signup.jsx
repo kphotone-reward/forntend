@@ -97,10 +97,15 @@ const fetchSuggestions = async () => {
   return (
    <div className="w-full flex items-start justify-start ">
    <div className="w-3/5 banner-bg h-screen  items-center justify-center relative"> 
+   <div className="mb-4 absolute bottom-1 left-5">
    <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
           alt="Logo"
           style={{ width: 250, height: "auto" }}
-          className="mb-4 absolute bottom-1 left-5"/>
+          />
+          <p className="text-left py-4 mt-2 text-md text-gray-400 border-t border-gray-100">
+      © 2026 <span className="text-blue-400 font-semibold">Kphotone</span> Research. All rights reserved.
+    </p>
+    </div>
     </div>
   {/* Added max-width and removed fixed space-x to prevent mobile overflow */}
  <div className="w-2/5  h-screen md:py-6 px-8 flex flex-col justify-center">
@@ -117,7 +122,7 @@ const fetchSuggestions = async () => {
 
      <form
         onSubmit={handleSubmit}
-        className="w-full   bg-white flex flex-col gap-3 "
+        className="w-full max-w-md  bg-white flex flex-col gap-3 "
       >
         {message && (
           <p className={`p-2 text-center rounded text-sm ${
@@ -241,9 +246,9 @@ const fetchSuggestions = async () => {
     
 
     {/* Footer */}
-    <footer className="text-center py-4 mt-2 text-md text-gray-400 border-t border-gray-100">
+    {/* <footer className="text-left py-4 mt-2 text-md text-gray-400 border-t border-gray-100">
       © 2026 <span className="text-blue-400 font-semibold">Kphotone</span> Research. All rights reserved.
-    </footer>
+    </footer> */}
   </div>
 </div>
   );

@@ -1915,7 +1915,7 @@ const getCurrentDateTime = () => {
                  value={survey._id}
                  disabled={survey.assignmentStatus === 'rewarded'}
                  >
-                  {survey.title} 
+                  {survey.surveyCode}-{survey.title} - {survey.rewardPoints} pts 
                   {survey.assignmentStatus === 'rewarded' ? '(Already Rewarded)' : ''}
                 </option>
               ))}
