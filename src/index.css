@@ -50,4 +50,16 @@ input, select, textarea {
   background: #ebf0f1;
   
 }
+.bg-blue-700 {
+  color: #275b98;
+}
+.bg-branding-Scolor {
+  color: #75d6ee;
+}
+.text-branding-Pcolor {
+  color: #275b98;
+}
+.text-branding-Scolor {
+  color: #75d6ee;
+}
 

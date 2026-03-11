@@ -96,7 +96,7 @@ const fetchSuggestions = async () => {
 
   return (
    <div className="w-full flex items-start justify-start ">
-   <div className="w-3/5 banner-bg h-screen  items-center justify-center relative"> 
+   <div className="w-3/5 banner-bg h-screen  items-center justify-center relative sm:flex hidden"> 
    <div className="mb-4 absolute bottom-1 left-5">
    <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
           alt="Logo"
@@ -108,8 +108,11 @@ const fetchSuggestions = async () => {
     </div>
     </div>
   {/* Added max-width and removed fixed space-x to prevent mobile overflow */}
- <div className="w-2/5  h-screen md:py-6 px-8 flex flex-col justify-center">
-   
+ <div className="w-2/5  h-screen md:py-6 px-8 flex flex-col justify-center w-full max-w-md">
+   <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
+          alt="Logo" className="md:hidden sm:block text-center mb-2"
+          style={{ width: 250, height: "auto" }}
+          />
     
     {/* Responsive Heading: smaller on mobile */}
    <h3 className="text-2xl font-bold   sm:text-3xl text-black">

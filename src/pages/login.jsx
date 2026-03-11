@@ -44,8 +44,8 @@ function Login() {
   }
 
   return (
-    <div className="w-full flex items-start justify-center  bg-white">
-     <div className="w-3/5 banner-bg h-screen  items-center justify-center relative">  
+    <div className="w-full flex items-start justify-start">
+     <div className="w-3/5 banner-bg h-screen  items-center justify-center relative sm:flex hidden">  
     {/* <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 bg-amber-50 bg-opacity-80 p-6 rounded-lg shadow-md">
        <img
           src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
@@ -80,7 +80,11 @@ function Login() {
       
       </div>
   {/* Container: Max-width 100% on mobile, restricted on desktop */}
-  <div className="w-2/5  h-screen md:py-6 px-8 flex flex-col justify-center">
+  <div className="w-2/5  h-screen md:py-6 px-8 flex flex-col justify-center w-full max-w-md">
+  <img src="https://raw.githubusercontent.com/kphotone-research/Images-kphotone/main/Logo.png"
+          alt="Logo" className="md:hidden sm:block text-center mb-2"
+          style={{ width: 250, height: "auto" }}
+          />
     
     {/* Heading: Smaller on mobile, Larger on Tablet+ */}
     <h3 className="text-2xl font-bold   sm:text-3xl text-black">

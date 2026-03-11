@@ -48,7 +48,7 @@ const ForgotPasswordModal = ({ onClose }) => {
           <div className="text-gray-600 mb-4 text-md">
            <p>Send your password reset request to our support team. They will assist you in resetting your password</p> 
            <p className="mt-4"> Please include your registered email address in the request. 
-            <a className="text-blue-600 underline" href="mailto:support@example.com?subject=Password%20Reset%20Request&body=Hello%0D%0A%0D%0AI%20need%20to%20reset%20my%20password.%20My%20email%20is:%20">Request New Password</a>
+            <a className="text-blue-600 " href="mailto:support@kphotone.com?subject=Password%20Reset%20Request&body=Hello%0D%0A%0D%0AI%20need%20to%20reset%20my%20password.%20My%20email%20is:%20">support@kphotone.com.</a>
 .       </p>
           </div>
 

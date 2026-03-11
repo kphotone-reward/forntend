@@ -297,7 +297,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
               className="flex items-center gap-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
             >
               {/* Modern Avatar Circle from Mockup */}
-              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-800 flex items-center justify-center text-white text-xs font-bold">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-800 flex items-center justify-center text-white text-xs font-bold">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <span className="text-gray-400 text-[10px]">▼</span>
@@ -362,33 +362,41 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
           <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
 
             {/* Available Points Card */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-200 p-8 rounded-2xl border border-white shadow-sm flex flex-col justify-between min-h-[180px]">
-              <div className="relative z-10">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Available Points</p>
-                <p className="text-5xl font-black text-slate-800">
-                  {/* {user?.points?.toLocaleString() ?? 0}  */}
-                  {availablePoints.toLocaleString()} 
-                </p>
-                <p className="text-xs text-slate-500 mt-2 font-medium">Value: ${(availablePoints / 100).toFixed(2)} equivalent</p>
-              </div>
-              {/* Subtle background icon/graph */}
-              <div className="absolute right-[-10%] bottom-[-10%] opacity-10 rotate-12">
-                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
-              </div>
-            </div>
+           <div className="relative overflow-hidden bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm flex flex-col justify-between min-h-[180px]">
+  <div className="relative z-10">
+    <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">
+      Available Points
+    </p>
+
+    <p className="text-5xl font-black text-blue-900">
+      {availablePoints.toLocaleString()}
+    </p>
+
+    <p className="text-xs text-blue-500 mt-2 font-medium">
+      Value: ${(availablePoints / 100).toFixed(2)} equivalent
+    </p>
+  </div>
+
+  {/* Background Icon */}
+  <div className="absolute right-[-10%] bottom-[-10%] opacity-10 rotate-12 text-blue-900">
+    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </svg>
+  </div>
+</div>
 
             {/* Pending Points Card */}
-            <div className="bg-gradient-to-br from-slate-200 to-slate-300 p-8 rounded-2xl border border-slate-300 shadow-sm flex flex-col justify-center items-center text-center">
-              <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-1">Redeem Points</p>
-              <p className="text-4xl font-black text-slate-700">
+            <div className="bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm flex flex-col justify-between min-h-[180px] p-8 rounded-2xl border border-slate-300 shadow-sm flex flex-col justify-center items-center text-center">
+              <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Redeem Points</p>
+              <p className="text-4xl font-black text-blue-900">
                 {pendingRequests.reduce((sum, request) => sum + request.points, 0).toLocaleString()}
               </p>
-               <p className="text-xs text-slate-500 mt-2 font-medium">Value: ${(pendingRequests.reduce((sum, request) => sum + request.points, 0) / 100).toFixed(2)} equivalent</p>
+               <p className="text-xs text-blue-500 mt-2 font-medium">Value: ${(pendingRequests.reduce((sum, request) => sum + request.points, 0) / 100).toFixed(2)} equivalent</p>
               <p className="text-xs text-slate-500 mt-12 font-medium mt-4 italic w-full">Verification in progress by administrators</p>
             </div>
 
             {/* Redeem Section */}
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm">
               <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4">Redeem Points</h3>
               <div className="flex items-center justify-between mb-2">
                 <button type="button" onClick={() => setSelectedRedeemSurveyId("__ALL__")}
@@ -433,7 +441,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                 <button
                   onClick={handleRedeem}
                   disabled={filteredSurveys.length === 0 || !selectedRedeemSurveyId}
-                  className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-cyan-200/50 ${!selectedRedeemSurveyId ? "bg-slate-300 text-slate-500 cursor-not-allowed" : "bg-slate-900 text-white hover:bg-black active:scale-[0.98]"
+                  className={`w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all shadow-lg hover:shadow-cyan-200/50 ${!selectedRedeemSurveyId ? "bg-slate-300 text-slate-500 cursor-not-allowed" : "bg-blue-900 text-white hover:bg-black active:scale-[0.98]"
                     }`}
                   style={selectedRedeemSurveyId ? { boxShadow: "0 4px 14px 0 rgba(0, 229, 255, 0.39)" } : {}}
                 >
@@ -445,11 +453,11 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
 
           {/* Tabs Section */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="flex border-b border-slate-100 bg-slate-50/50 px-2">
+            <div className="flex  bg-gradient-to-br from-cyan-50 to-blue-200  m px-2">
               {["assignedSurveys", "completedSurveys", "redemptionLogs"].map((tab) => (
                 <button
                   key={tab}
-                  className={`px-6 py-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === tab ? "border-slate-900 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
+                  className={`px-6 py-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === tab ? "border-blue-900 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
                     }`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -465,7 +473,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                 {activeTab === "assignedSurveys" && (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                      <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                      <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-4">Description</th>
                           <th className="px-6 py-4">Details / Link</th>
@@ -489,7 +497,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                 {activeTab === "completedSurveys" && (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                      <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                      <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-4">Date</th>
                           <th className="px-6 py-4">Survey</th>
@@ -540,11 +548,11 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
 
                     <h3 className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-1"> Pending Requests</h3>
                     {/* <p className="text-sm italic mb-4">Total Pending Points: {pendingRequests.reduce((sum, request) => sum + request.points, 0)}&nbsp; (when admin approved its will be deducted from your points)</p> */}
-                    <p className="text-xs text-slate-500 mt-2 font-medium">when admin approved its will be deducted from your points</p>
-                    <hr className="my-2 border-gray-300" mb-4 />
+                    <p className="text-xs text-slate-500 tracking-widest mt-2 ">when admin approved its will be deducted from your points</p>
+                    <hr className="my-2 border-gray-300 mb-4" />
                     {pendingRequests.length > 0 ? (
                       <table className="w-full text-left">
-                        <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                        <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest border-b border-gray-200">
                           <tr>
                             <th className="px-6 py-4">Survey</th>
                             <th className="px-6 py-4">Date</th>
@@ -581,7 +589,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                     {approvedRequests.length > 0 ? (
                       <>
                         <table className="w-full text-left">
-                          <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                          <thead className="text-[10px] text-slate-400 font-black border-b border-gray-200 uppercase tracking-widest">
                             <tr>
                               <th className="px-6 py-4">Survey</th>
                               <th className="px-6 py-4">Date</th>
@@ -611,7 +619,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
 
                       </>
                     ) : (
-                      <p className="text-sm text-center">No approved requests.</p>
+                      <p className="text-gray-500 mt-4 text-md text-center">No approved requests.</p>
                     )}
                   </div>
                 )}
@@ -626,6 +634,40 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
           </div>
         </div>
       </div>
+      <footer className="bg-white border-t border-gray-200 py-6 mt-auto">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center space-y-3">
+
+    {/* Links */}
+    <div className="flex items-center space-x-3 text-sm text-gray-600">
+      <a
+        href="https://www.keptone.com/privacy-policy.html"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-blue-600 transition"
+      >
+        Privacy Policy
+      </a>
+
+      <span className="text-gray-400">|</span>
+
+      <a
+        href="https://www.kphotone.com/term.html"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-blue-600 transition"
+      >
+        Terms & Conditions
+      </a>
+    </div>
+    <p className="font-bold text-gray-500 ">Kphotone Research</p>
+
+    {/* Copyright */}
+    <div className="text-xs text-gray-500 text-center">
+      © {new Date().getFullYear()} Kphotone Research. All rights reserved.
+    </div>
+
+  </div>
+</footer>
     </div>
   );
 }
