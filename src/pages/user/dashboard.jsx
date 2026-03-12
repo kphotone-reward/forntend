@@ -364,11 +364,11 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
             {/* Available Points Card */}
            <div className="relative overflow-hidden bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm flex flex-col justify-between min-h-[180px]">
   <div className="relative z-10">
-    <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">
+    <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-1">
       Available Points
     </p>
 
-    <p className="text-5xl font-black text-blue-900">
+    <p className="text-6xl font-black text-blue-900">
       {availablePoints.toLocaleString()}
     </p>
 
@@ -387,8 +387,8 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
 
             {/* Pending Points Card */}
             <div className="bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm flex flex-col justify-between min-h-[180px] p-8 rounded-2xl border border-slate-300 shadow-sm flex flex-col justify-center items-center text-center">
-              <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">Redeem Points</p>
-              <p className="text-4xl font-black text-blue-900">
+              <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-1">Redeem Points</p>
+              <p className="text-5xl font-black text-blue-900">
                 {pendingRequests.reduce((sum, request) => sum + request.points, 0).toLocaleString()}
               </p>
                <p className="text-xs text-blue-500 mt-2 font-medium">Value: ${(pendingRequests.reduce((sum, request) => sum + request.points, 0) / 100).toFixed(2)} equivalent</p>
@@ -457,7 +457,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
               {["assignedSurveys", "completedSurveys", "redemptionLogs"].map((tab) => (
                 <button
                   key={tab}
-                  className={`px-6 py-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === tab ? "border-blue-900 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
+                  className={`px-6 py-4 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${activeTab === tab ? "border-blue-900 text-slate-900 bg-gradient-to-br from-cyan-100 to-blue-300"  : "border-transparent text-slate-400 hover:text-slate-600"
                     }`}
                   onClick={() => setActiveTab(tab)}
                 >
