@@ -5,6 +5,7 @@ import CreateUserModal from "./createUserModal";
 import EditUserModal from "./EditUserModal";
 // import AddPointsModal from "./AddPointsModal";
 import ErrorBoundary from "./ErrorBoundary";
+import Select from "react-select";
 
 
 function AdminDashboard() {
@@ -40,6 +41,7 @@ function AdminDashboard() {
   const [surveys, setSurveys] = useState([])
   const [stats, setStats] = useState({
     totalUsers: 0,
+    inactiveUsers: 0,
     totalSurveys: 0,
     totalAssignments: 0,
     totalPointsDistributed: 0
@@ -285,7 +287,8 @@ const fetchSpecialities = async () => {
   // Fetch stats
   const fetchStats = useCallback(async () => {
     try {
-      const res = await api.get("/surveys/admin/stats");
+     // const res = await api.get("/surveys/admin/stats");
+      const res = await api.get("/admin/stats");
       setStats(res.data);
     } catch (err) {
       //console.error("Failed to fetch stats", err.response?.status, err.response?.data);
@@ -315,6 +318,7 @@ const fetchSpecialities = async () => {
       fetchUsers()
       fetchSurveys()
       fetchStats()
+      console.log("Overview stats:", stats); // Log stats to verify data
       fetchRedeemStats();
       
     }
@@ -788,6 +792,16 @@ const getCurrentDateTime = () => {
                 <p className="text-5xl font-bold text-blue-600 mt-2">
                   {stats.totalUsers}
                 </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Active User: {stats.totalUsers - stats.inactiveUsers}
+                 </p>
+              </div>
+              <div className="bg-white p-6 rounded shadow hover:shadow-lg transition">
+                <p className="text-sm capitalize text-gray-600 font-semibold">Inactive Users</p>
+                <p className="text-5xl font-bold text-red-500 mt-2">
+                  {stats.inactiveUsers}
+                </p>
+                
               </div>
               <div className="bg-white p-6 rounded shadow hover:shadow-lg transition">
                 <p className="text-sm capitalize text-gray-600 font-semibold">Total Surveys</p>
@@ -1172,7 +1186,9 @@ const getCurrentDateTime = () => {
                     <tr>
                       <th className="py-3 px-4 text-left font-semibold">Title</th>
                       <th className="py-3 px-4 text-left font-semibold">Survey Code</th>
-                      <th className="py-3 px-4 text-left font-semibold">Survey Link</th>
+                      <th className="py-3 px-4 text-left font-semibold" style={{ maxWidth: "200px" }}>
+                        Survey Link
+                      </th>
                       <th className="py-3 px-4 text-left font-semibold">Reward Points</th>
                       <th className="py-3 px-4 text-left font-semibold">Start Date</th>
                       <th className="py-3 px-4 text-left font-semibold">End Date</th>
@@ -1185,12 +1201,12 @@ const getCurrentDateTime = () => {
                       <tr key={survey._id} className="border-b hover:bg-gray-50 transition">
                         <td className="py-3 px-4 font-semibold">{survey.title}</td>
                         <td className="py-3 px-4">{survey.surveyCode || "-"}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4" style={{ maxWidth: "200px" }}>
                           <a
                             href={survey.surveyLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline truncate max-w-xs"
+                            className="text-blue-500 hover:underline break-words"
                           >
                             {survey.surveyLink}
                           </a>
@@ -1333,8 +1349,8 @@ const getCurrentDateTime = () => {
                       setNewSurvey({ ...newSurvey, surveyLink: e.target.value })
                     }
                     className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                    placeholder="https://example.com/survey"
-                    required
+                    placeholder="NA"
+                    
                   />
                 </div>
 
@@ -1360,11 +1376,11 @@ const getCurrentDateTime = () => {
                     Start Date
                   </label>
                   <input
-                    type="datetime-local"
+                    type="date"
                     value={newSurvey.startDate}
-                    min={getCurrentDateTime()}
+                    // min={getCurrentDateTime()}
                     onChange={(e) =>
-                      setNewSurvey({ ...newSurvey, startDate: e.target.value })
+                      setNewSurvey({ ...newSurvey, startDate: e.target.value,endadte: "" })
                     }
                     className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                     required
@@ -1376,9 +1392,10 @@ const getCurrentDateTime = () => {
                     End Date
                   </label>
                   <input
-                    type="datetime-local"
+                    type="date"
                     value={newSurvey.endDate}
-                    min={newSurvey.startDate || getCurrentDateTime()}
+                    min={newSurvey.startDate}
+                    disabled={!newSurvey.startDate}
                     onChange={(e) =>
                       setNewSurvey({ ...newSurvey, endDate: e.target.value })
                     }
@@ -1412,46 +1429,55 @@ const getCurrentDateTime = () => {
     <label className="block text-gray-700 font-semibold mb-2">
       Select Survey
     </label>
-    <select
-      value={assignSurvey.surveyId}
-      onChange={(e) =>
-        setAssignSurvey({ ...assignSurvey, surveyId: e.target.value })
-      }
-      className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-      required
-    >
-      <option value="">Choose a survey...</option>
-      {surveys.map((s) => (
-        <option key={s._id} value={s._id}>
-          {s.surveyCode} &nbsp;{s.title} ({s.rewardPoints} pts)
-        </option>
-      ))}
-    </select>
+    <Select
+  options={surveys.map((s) => ({
+    value: s._id,
+    label: `${s.surveyCode} - ${s.title} (${s.rewardPoints} pts)`
+  }))}
+
+  value={
+    surveys
+      .map((s) => ({
+        value: s._id,
+        label: `${s.surveyCode} - ${s.title} (${s.rewardPoints} pts)`
+      }))
+      .find((s) => s.value === assignSurvey.surveyId) || null
+  }
+
+  onChange={(selected) =>
+    setAssignSurvey({
+      ...assignSurvey,
+      surveyId: selected?.value || ""
+    })
+  }
+
+  placeholder="Search & select survey..."
+  isSearchable
+/>
   </div>
  {/*  SELECT SPECIALITY */}
   <div>
   <label className="block text-gray-700 font-semibold mb-2">
     Filter by Speciality
   </label>
+<Select
+  isMulti
+  options={specialities.map((s) => ({
+    value: s.name,
+    label: s.name
+  }))}
 
-  <select
-    multiple
-    className="w-full px-4 py-2 border rounded"
-    onChange={(e) => {
-  const values = Array.from(e.target.selectedOptions, option => option.value);
-  // console.log("Selected Specialities:", values);
-  setSelectedSpecialities(values);
-}}
+  value={selectedSpecialities.map((s) => ({
+    value: s,
+    label: s
+  }))}
 
-  >
-    {Array.isArray(specialities) &&
-      specialities.map((s) => (
-        <option key={s._id} value={s.name}>
-          {s.name}
-        </option>
-      ))}
+  onChange={(selected) =>
+    setSelectedSpecialities(selected.map((s) => s.value))
+  }
 
-  </select>
+  placeholder="Search & select specialities..."
+/>
 </div>
 
 {/* Select All Checkbox */}
@@ -1477,6 +1503,29 @@ const getCurrentDateTime = () => {
 </div>
 
 {/*  SELECT USERS */}
+<Select
+  isMulti
+  options={safeUsers.map((u) => ({
+    value: u._id,
+    label: `${u.name} (${u.email})`
+  }))}
+
+  value={safeUsers
+    .filter((u) => assignSurvey.userIds.includes(u._id))
+    .map((u) => ({
+      value: u._id,
+      label: `${u.name} (${u.email})`
+    }))}
+
+  onChange={(selected) =>
+    setAssignSurvey({
+      ...assignSurvey,
+      userIds: selected.map((s) => s.value)
+    })
+  }
+
+  placeholder="Search & select users..."
+/>
 <select
   multiple
   value={assignSurvey.userIds}
