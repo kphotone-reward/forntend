@@ -168,7 +168,9 @@ const EditUserModal = ({ user, onClose, onSuccess }) => {
               {showPassword ? "\u{1F441}" : "\u{1F576}"} {/* Eye icon */}
             </span>
             <p style={styles.helperText} className="text-sm italic text-gray-300">
-            Leave password empty to keep current password
+            Leave empty to keep current password.  <br/>
+          If you set a new password, the user will be required to change it on next login.
+          
           </p>
           </div>
 

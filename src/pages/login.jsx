@@ -15,6 +15,7 @@ function Login() {
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
 
   const handleLogin = async () => {
+    
     if (!email || !password) {
       setError("Please fill in both email and password.");
       setTimeout(() => setError(""), 5000); // Clear error after 5 seconds
@@ -24,23 +25,27 @@ function Login() {
     try {
       // const res = await api.post(`${import.meta.env.VITE_API_URL}/auth/login`, { email, password });
        const res = await api.post(`/auth/login`, { email, password });
-      const token = res.data.token
+      const { token, role, mustChangePassword } = res.data;
+      console.log("LOGIN RESPONSE:", res.data);
 
       localStorage.setItem("token", token)
 
       const user = jwtDecode(token)
-     // console.log("LOGIN BODY:", { email, password });
-     // console.log("USER FOUND:", user);
-
-      if (user.role === "admin") {
-        navigate("/admin/dashboard")
-      } else {
-        navigate("/user/dashboard")
-      }
+    
+     if (mustChangePassword) {
+  navigate("/change-password");
+} else {
+  if (role === "admin") {
+    navigate("/admin/dashboard");
+  } else {
+    navigate("/user/dashboard");
+  }
+}
     } catch (err) {
       setError(err.response?.data?.message || "Login failed")
       setTimeout(() => setError(""), 5000); // Clear error after 5 seconds
     }
+    
   }
 
   return (

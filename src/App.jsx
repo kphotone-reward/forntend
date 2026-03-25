@@ -7,6 +7,8 @@ import AdminDashboard from "./pages/admin/dashboard"
 import RedeemPoints from "./pages/user/redeemPoints"
 import SurveyPage from "./pages/user/survey"
 import Signup from "./pages/signup"
+import ChangePassword from "./pages/ChangePassword";
+
 
 
 
@@ -17,6 +19,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/change-password" element={<ChangePassword />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<RoleGuard requiredRole="user" />}>

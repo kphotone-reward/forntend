@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
+import { checkPasswordRules } from "../utils/passwordValidator";
+
 
 // You can replace this with your actual API instance if you have one set up
 import api from "../api/axios";
@@ -23,6 +25,10 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
   const [specialityInput, setSpecialityInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [passwordRules, setPasswordRules] = useState({});
+  const [showRules, setShowRules] = useState(false);
+  
+
 
   useEffect(() => {
   if (specialityInput.length > 1) {
@@ -90,6 +96,10 @@ const fetchSuggestions = async () => {
         setLoading(false);
     }
   };
+
+  
+
+  
 
   
 
@@ -214,8 +224,15 @@ const fetchSuggestions = async () => {
             name="password"
             placeholder="Password"
             value={form.password}
-            onChange={handleChange}
-            required
+           onFocus={() => setShowRules(true)}
+  onBlur={() => {
+    if (!form.password) setShowRules(false); // optional
+  }}
+  onChange={(e) => {
+    handleChange(e);
+    setPasswordRules(checkPasswordRules(e.target.value));
+  }}
+  required
             className="w-full p-3 text-2md  text-black font-semibold border rounded focus:ring-2 focus:ring-blue-500 outline-none"
           />
           <span
@@ -225,6 +242,25 @@ const fetchSuggestions = async () => {
             {showPassword ? "👁️" : "🕶️"}
           </span>
         </div>
+{showRules && (
+        <div className="text-sm mt-2 space-y-1 flex flex-row flex-wrap gap-2 italic">
+  <p className={passwordRules.length ? "text-green-600" : "text-red-500"}>
+    {passwordRules.length ? "✔" : "✖"} At least 8 characters
+  </p>
+  <p className={passwordRules.uppercase ? "text-green-600" : "text-red-500"}>
+    {passwordRules.uppercase ? "✔" : "✖"} One uppercase letter
+  </p>
+  <p className={passwordRules.lowercase ? "text-green-600" : "text-red-500"}>
+    {passwordRules.lowercase ? "✔" : "✖"} One lowercase letter
+  </p>
+  <p className={passwordRules.number ? "text-green-600" : "text-red-500"}>
+    {passwordRules.number ? "✔" : "✖"} One number
+  </p>
+  <p className={passwordRules.special ? "text-green-600" : "text-red-500"}>
+    {passwordRules.special ? "✔" : "✖"} One special character
+  </p>
+</div>
+)}
 
         <button
           type="submit"

@@ -54,13 +54,11 @@ const fetchSuggestions = async () => {
 
     try {
       //const res = await axios.post(// `${import.meta.env.VITE_API_URL}/auth/signup`, 
-      const res = await api.post(`/auth/signup`,form,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const res = await api.post(`auth/admin/create-user`, form, {
+        headers: {
+               Authorization: `Bearer ${localStorage.getItem("token")}`,
+       },
+      });
 
       // ✅ SUCCESS
       if (res.status === 200 || res.status === 201) {
@@ -92,7 +90,7 @@ const fetchSuggestions = async () => {
           <input
             name="name"
             placeholder="Name"
-            className="w-full mb-4 p-2 border rounded"
+            className="w-full mb-4 p-2 border rounded capitalize"
             onChange={handleChange}
             required
           />
@@ -115,7 +113,7 @@ const fetchSuggestions = async () => {
       setSpecialityInput(e.target.value);
       setForm({ ...form, speciality: e.target.value });
     }}
-    className=" w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+    className=" w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
     required
   />
 

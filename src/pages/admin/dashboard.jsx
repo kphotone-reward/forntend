@@ -830,8 +830,8 @@ const getCurrentDateTime = () => {
                   <tbody>
                     {users.slice(0, 5).map((u) => (
                       <tr key={u._id} className="border-b border-b-gray-300 hover:bg-gray-50 transition">
-                        <td className="py-2 px-4">{u.name}</td>
-                        <td className="py-2 px-4">{u.speciality}</td>
+                        <td className="py-2 px-4 capitalize">{u.name}</td>
+                        <td className="py-2 px-4 capitalize">{u.speciality}</td>
                         <td className="py-2 px-4">{u.email}</td>
                         <td className="py-2 px-4">
                           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded">
@@ -979,7 +979,7 @@ const getCurrentDateTime = () => {
                   <tbody>
                     {users.map((u) => (
                       <tr key={u._id} className="border-b border-gray-300 hover:bg-gray-50 transition">
-                        <td className="py-3 px-4">{u.name}</td>
+                        <td className="py-3 px-4 capitalize">{u.name}</td>
                          <td className="py-3 px-4">{u.speciality}</td>
                         <td className="py-3 px-4">{u.email}</td>
                         <td className="py-3 px-4">{u.phone}</td>

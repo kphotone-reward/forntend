@@ -355,11 +355,11 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
             <h1 className="text-3xl font-light text-slate-900">
               Welcome back, <span className="font-bold">{user?.name.split(" ")[0] || "User"}</span>
             </h1>
-            <p className="text-slate-500 mt-1">Your Insights, Your Rewards.</p>
+            <p className="text-slate-500 mt-1">Thank you for being a valued member of the Kphotone Research Physician Panel.</p>
           </header>
 
           {/* Main Stats & Redeem Section */}
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
 
             {/* Available Points Card */}
            <div className="relative overflow-hidden bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm flex flex-col justify-between min-h-[180px]">
@@ -373,7 +373,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
     </p>
 
     <p className="text-xs text-blue-500 mt-2 font-medium">
-      Value: ${(availablePoints / 100).toFixed(2)} equivalent
+      Value: {(availablePoints / 100).toFixed(2)} <br/><i className="text-slate-600 text-sm">equivalent to local currency</i>
     </p>
   </div>
 
@@ -387,17 +387,18 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
 
             {/* Pending Points Card */}
             <div className="bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm flex flex-col justify-between min-h-[180px] p-8 rounded-2xl border border-slate-300 shadow-sm flex flex-col justify-center items-center text-center">
-              <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-1">Redeem Points</p>
+              <p className="text-xs font-bold text-slate-800 uppercase tracking-widest mb-1">Under Reviews Points</p>
               <p className="text-5xl font-black text-blue-900">
                 {pendingRequests.reduce((sum, request) => sum + request.points, 0).toLocaleString()}
               </p>
-               <p className="text-xs text-blue-500 mt-2 font-medium">Value: ${(pendingRequests.reduce((sum, request) => sum + request.points, 0) / 100).toFixed(2)} equivalent</p>
-              <p className="text-xs text-slate-500 mt-12 font-medium mt-4 italic w-full">Verification in progress by administrators</p>
+               <p className="text-xs text-blue-500 mt-2 font-medium">Value: {(pendingRequests.reduce((sum, request) => sum + request.points, 0) / 100).toFixed(2)} <br/><i className="text-slate-600 text-sm">equivalent to local currency</i></p>
+              <p className="text-xs text-slate-500 mt-12 font-medium mt-4 italic w-full">Rewards are typically approved within 5–10 business days <br/> after survey completion</p>
             </div>
 
             {/* Redeem Section */}
             <div className="bg-gradient-to-br from-cyan-50 to-blue-200 p-8 rounded-2xl border border-cyan-100 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4">Redeem Points</h3>
+              <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest ">Redeem Your Honorarium</h3>
+              <p className="text-sm text-slate-800 mb-4">Select a rewarded survey to redeem your points</p>
               <div className="flex items-center justify-between mb-2">
                 <button type="button" onClick={() => setSelectedRedeemSurveyId("__ALL__")}
                   disabled={filteredSurveys.length === 0}
@@ -451,6 +452,11 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
             </div>
           </section>
 
+          <p className="text-sm text-gray-500 mb-4">
+           <b>Note:</b> Some rewards may still be under review.
+Your points will become redeemable once verification is completed by our administrators.
+          </p>
+
           {/* Tabs Section */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex  bg-gradient-to-br from-cyan-50 to-blue-200  m px-2">
@@ -476,7 +482,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                       <thead className="text-[10px] text-slate-400 font-black uppercase tracking-widest border-b border-gray-200">
                         <tr>
                           <th className="px-6 py-4">Description</th>
-                          <th className="px-6 py-4">Details / Link</th>
+                          {/* <th className="px-6 py-4">Details / Link</th> */}
                           <th className="px-6 py-4">Date</th>
                           <th className="px-6 py-4 text-right">Points</th>
                         </tr>
@@ -485,7 +491,7 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                         {surveys.map((s) => (
                           <tr key={s._id} className="hover:bg-slate-50/80 transition-colors group">
                             <td className="px-6 py-4 font-semibold text-slate-700">{s.surveyCode ? `${s.surveyCode} - ${s.title}` : s.title}</td>
-                            <td className="px-6 py-4 text-cyan-600 hover:underline cursor-pointer">{s.surveyLink}</td>
+                            {/* <td className="px-6 py-4 text-cyan-600 hover:underline cursor-pointer">{s.surveyLink}</td> */}
                             <td className="px-6 py-4 text-slate-400">{new Date(s.endDate).toLocaleDateString()}</td>
                             <td className="px-6 py-4 text-right font-bold text-slate-900">{s.rewardPoints}</td>
                           </tr>
@@ -517,13 +523,16 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                               <td className="px-6 py-4 font-medium">{survey.rewardPoints}</td>
                               <td className="px-6 py-4 text-gray-600 capitalize">
                                 <span
-                                  className={`px-3 py-1 rounded text-sm font-medium ${survey.assignmentStatus === "rewarded"
-                                      ? "bg-green-50 border-green-500 text-green-600 border"
-                                      : "bg-blue-50 border-blue-500 text-blue-600 border"
-                                    }`}
-                                >
-                                  {survey.assignmentStatus}
-                                </span>
+                                 className={`px-3 py-1 rounded text-sm font-medium ${
+                                survey.assignmentStatus === "rewarded"
+                                  ? "bg-green-50 border-green-500 text-green-600 border"
+                                  : "bg-blue-50 border-blue-500 text-blue-600 border"
+                              }`}
+                            >
+    {survey.assignmentStatus === "rewarded"
+      ? "Completed"
+      : survey.assignmentStatus}
+  </span>
                               </td>
                             </tr>
                           );
@@ -572,7 +581,9 @@ const availablePoints = (user?.points ?? 0) - pendingPoints;
                               </td>
                               <td className="px-6 py-4 font-medium">{new Date(request.createdAt).toLocaleDateString()}</td>
                               <td className="px-6 py-4 font-medium">{request.points}</td>
-                              <td className="px-6 py-4 font-medium capitalize"><span className="bg-red-50 border-red-500 text-red-600 border px-3 py-1 rounded text-sm font-medium">{request.status}</span></td>
+                              <td className="px-6 py-4 font-medium capitalize"><span className="bg-red-50 border-red-500 text-red-600 border px-3 py-1 rounded text-sm font-medium">
+                                {request.status === "pending" ? "Under Review" : request.status}
+                                </span></td>
                             </tr>
                           ))}
                         </tbody>
