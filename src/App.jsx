@@ -22,13 +22,13 @@ function App() {
         <Route path="/change-password" element={<ChangePassword />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route element={<RoleGuard requiredRole="user" />}>
+          <Route element={<RoleGuard allowedRoles={["user"]} />}>
             <Route path="/user/dashboard" element={<UserDashboard />} />
             <Route path="/user/redeemPoints" element={<RedeemPoints />} />
             <Route path="/user/survey" element={<SurveyPage />} />
           </Route>
 
-          <Route element={<RoleGuard requiredRole="admin" />}>
+          <Route element={<RoleGuard allowedRoles={["admin", "super_admin"]} />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Route>
         </Route>

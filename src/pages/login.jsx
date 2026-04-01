@@ -28,14 +28,20 @@ function Login() {
       const { token, role, mustChangePassword } = res.data;
       console.log("LOGIN RESPONSE:", res.data);
 
-      localStorage.setItem("token", token)
+      localStorage.setItem("token",res.data.token)
+
+      localStorage.setItem(
+        "user" , JSON.stringify({
+          role: res.data.role,
+        })
+      )
 
       const user = jwtDecode(token)
     
-     if (mustChangePassword) {
+    if (mustChangePassword) {
   navigate("/change-password");
 } else {
-  if (role === "admin") {
+  if (["admin", "super_admin"].includes(role)) {
     navigate("/admin/dashboard");
   } else {
     navigate("/user/dashboard");

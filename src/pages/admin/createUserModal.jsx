@@ -3,7 +3,8 @@ import axios from "axios";
 import { useEffect } from "react";
 // You can replace this with your actual API instance if you have one set up
 import api from "../../api/axios";
-
+const currentUser = JSON.parse(localStorage.getItem("user"))
+console.log("Current User:", currentUser);
 const CreateUserModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
     name: "",
@@ -12,6 +13,7 @@ const CreateUserModal = ({ onClose, onSuccess }) => {
     country: "",
     password: "",
     speciality: "",
+    role: "user",
   });
 
   const [loading, setLoading] = useState(false);
@@ -81,12 +83,33 @@ const fetchSuggestions = async () => {
     }
   };
 
+ 
+  
+
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
         <h3 className="font-bold py-4 text-2xl">Create User</h3>
 
         <form onSubmit={handleSubmit}>
+        <div>
+  {/* <p>Select the User Role</p> */}
+
+  {currentUser?.role === "super_admin" && (
+    <select
+      className="w-full mb-4 p-2 border rounded"
+      value={form.role}
+      onChange={(e) =>
+        setForm({ ...form, role: e.target.value })
+      }
+    >
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+  )}
+</div>
+
+
           <input
             name="name"
             placeholder="Name"
@@ -105,35 +128,46 @@ const fetchSuggestions = async () => {
           />
                <div className="mb-4 ">
         
+  {form.role === "admin" ? (
   <input
     type="text"
-    placeholder="Speciality"
-    value={specialityInput}
-    onChange={(e) => {
-      setSpecialityInput(e.target.value);
-      setForm({ ...form, speciality: e.target.value });
-    }}
-    className=" w-full p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-    required
+    value="Admin"
+    disabled
+    className="w-full mb-4 p-2 border rounded bg-gray-100 text-gray-500"
   />
+) : (
+  <div className="mb-4">
+    <input
+      type="text"
+      placeholder="Speciality"
+      value={specialityInput}
+      onChange={(e) => {
+        setSpecialityInput(e.target.value);
+        setForm({ ...form, speciality: e.target.value });
+      }}
+      className="w-full p-2 border border-gray-300 rounded"
+      required
+    />
 
-  {suggestions.length > 0 && (
-    <ul className="absolute  bg-white border border-gray-200 rounded mt-1 max-h-40 overflow-y-auto shadow z-20">
-      {suggestions.map((s) => (
-        <li
-          key={s._id}
-          onClick={() => {
-            setSpecialityInput(s.name);
-            setForm({ ...form, speciality: s.name });
-            setSuggestions([]);
-          }}
-          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-        >
-          {s.name}
-        </li>
-      ))}
-    </ul>
-  )}
+    {suggestions.length > 0 && (
+      <ul className="absolute bg-white border rounded mt-1 max-h-40 overflow-y-auto shadow z-20">
+        {suggestions.map((s) => (
+          <li
+            key={s._id}
+            onClick={() => {
+              setSpecialityInput(s.name);
+              setForm({ ...form, speciality: s.name });
+              setSuggestions([]);
+            }}
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+          >
+            {s.name}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+)}
 </div>
           <input
             name="phone"
@@ -150,6 +184,8 @@ const fetchSuggestions = async () => {
             onChange={handleChange}
             required
           />
+
+       
           <div className="relative w-full mb-4">
             <input
               name="password"
@@ -167,6 +203,7 @@ const fetchSuggestions = async () => {
               {showPassword ? "\u{1F441}" : "\u{1F576}"} {/* Eye icon */}
             </span>
           </div>
+          
           {error && <p style={{ color: "red" }}>{error}</p>}
 
           <div style={styles.actions}>

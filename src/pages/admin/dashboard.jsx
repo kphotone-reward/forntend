@@ -6,6 +6,7 @@ import EditUserModal from "./EditUserModal";
 // import AddPointsModal from "./AddPointsModal";
 import ErrorBoundary from "./ErrorBoundary";
 import Select from "react-select";
+import { jwtDecode } from "jwt-decode";
 
 
 function AdminDashboard() {
@@ -59,6 +60,8 @@ const [redeemLimit, setRedeemLimit] = useState(10);
 const [redeemTotalPages, setRedeemTotalPages] = useState(1);
 const [redemptionRequests, setRedeemRequests] = useState([]);
 const[assignedSurveys,setAssignedSurveys]=useState([]);
+
+const currentUser = JSON.parse(localStorage.getItem("user"))
 
 
   // Form states
@@ -157,10 +160,19 @@ const handleAddPoints = async () => {
 // });
 };
 
+//decoded token 
+
+const token = localStorage.getItem("token");
+
+let decoded = null;
+
+try {
+  decoded = token ? jwtDecode(token) : null;
+ // console.log("decoded", decoded.role)
+} catch {}
+
+
 //fetch complete survey
-
-
-
 
 useEffect(() => {
   if (assignedUsers.length > 0) {
@@ -318,7 +330,7 @@ const fetchSpecialities = async () => {
       fetchUsers()
       fetchSurveys()
       fetchStats()
-      console.log("Overview stats:", stats); // Log stats to verify data
+      //console.log("Overview stats:", stats); // Log stats to verify data
       fetchRedeemStats();
       
     }
@@ -688,7 +700,7 @@ const getCurrentDateTime = () => {
           />
            <div className="flex items-center relative">
             <span className="text-xs md:text-sm text-gray-950 mr-2 md:mr-4 capitalize truncate max-w-[100px] md:max-w-none">
-              Welcome, {user ? user.name : "Admin"}
+            Welcome,<b>{decoded.name }</b> 
             </span>
              <button
               onClick={handleLogout}
@@ -1003,12 +1015,12 @@ const getCurrentDateTime = () => {
                             {u.points || 0}
                           </span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 capitalize">
                           <span
-                            className={`px-3 py-1 rounded text-white text-sm font-medium ${
-                              u.role === "admin"
-                                ? "bg-red-500"
-                                : "bg-green-500"
+                            className={`px-3 py-1 rounded  text-sm font-medium ${
+                              u.role === "admin" || u.role == "super_admin"
+                                ? "bg-red-50 rounded-1xl text-red-500 border border-red-500"
+                                : "bg-green-50 rounded-1xl text-green-800 border border-green-800"
                             }`}
                           >
                             {u.role}
@@ -1035,7 +1047,7 @@ const getCurrentDateTime = () => {
       Add Points
     </button>
   )}
-  {u.role !== "admin" && (
+  {currentUser?.role === "super_admin" && (
     <button
       className="rounded-2xl bg-neutral-50 border px-4 py-1 border-gray-300 text-gray-700 hover:bg-gray-100 mr-2"
       onClick={() => setEditUser(u)}
@@ -1043,6 +1055,7 @@ const getCurrentDateTime = () => {
       Edit
     </button>
   )}
+  
   {u.role !== "admin" && (
   <button
     className="rounded text-sm bg-neutral-50 border px-4 py-1 border-blue-500 text-blue-700 hover:bg-blue-100"
