@@ -4,7 +4,7 @@ import { useEffect } from "react";
 // You can replace this with your actual API instance if you have one set up
 import api from "../../api/axios";
 const currentUser = JSON.parse(localStorage.getItem("user"))
-console.log("Current User:", currentUser);
+//console.log("Current User:", currentUser);
 const CreateUserModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
     name: "",
@@ -112,7 +112,7 @@ const fetchSuggestions = async () => {
 
           <input
             name="name"
-            placeholder="Name"
+            placeholder="Full Name"
             className="w-full mb-4 p-2 border rounded capitalize"
             onChange={handleChange}
             required
@@ -139,7 +139,7 @@ const fetchSuggestions = async () => {
   <div className="mb-4">
     <input
       type="text"
-      placeholder="Speciality"
+      placeholder="Start typing to search or add a new speciality"
       value={specialityInput}
       onChange={(e) => {
         setSpecialityInput(e.target.value);
@@ -179,7 +179,7 @@ const fetchSuggestions = async () => {
           />
           <input
             name="country"
-            placeholder="Country"
+            placeholder="Enter your country name"
             className="w-full mb-4 p-2 border rounded"
             onChange={handleChange}
             required

@@ -26,7 +26,7 @@ function Login() {
       // const res = await api.post(`${import.meta.env.VITE_API_URL}/auth/login`, { email, password });
        const res = await api.post(`/auth/login`, { email, password });
       const { token, role, mustChangePassword } = res.data;
-      console.log("LOGIN RESPONSE:", res.data);
+      //console.log("LOGIN RESPONSE:", res.data);
 
       localStorage.setItem("token",res.data.token)
 

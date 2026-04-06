@@ -498,6 +498,9 @@ Your points will become redeemable once verification is completed by our adminis
                         ))}
                       </tbody>
                     </table>
+                     {surveys.length === 0 && (
+                      <p className=" mt-4 text-md text-center text-slate-400 italic">No any  surveys yet.</p>
+                    )}
                   </div>
                 )}
                 {activeTab === "completedSurveys" && (
@@ -544,7 +547,7 @@ Your points will become redeemable once verification is completed by our adminis
                     </table>
 
                     {filteredSurveys.length === 0 && (
-                      <p className="text-gray-500 mt-4 text-md text-center">No any rewarded surveys yet.</p>
+                      <p className=" mt-4 text-md text-center text-slate-400 italic">No any rewarded surveys yet.</p>
                     )}
                   </div>
 
@@ -589,7 +592,7 @@ Your points will become redeemable once verification is completed by our adminis
                         </tbody>
                       </table>
                     ) : (
-                      <p className="text-gray-500 mt-4 text-md text-center">No pending requests.</p>
+                      <p className="text-slate-400 italic mt-4 text-md text-center">No pending requests.</p>
                     )}
 
                     <hr className="my-4 border-gray-300" />
@@ -630,14 +633,14 @@ Your points will become redeemable once verification is completed by our adminis
 
                       </>
                     ) : (
-                      <p className="text-gray-500 mt-4 text-md text-center">No approved requests.</p>
+                      <p className="text-slate-400 italic mt-4 text-md text-center">No approved requests.</p>
                     )}
                   </div>
                 )}
                 {/* Empty State */}
                 {surveys.length === 0 && (
                   <div className="py-20 text-center">
-                    <p className="text-slate-400 italic">No data available for this section.</p>
+                    {/* <p className="text-slate-400 italic">No data available for this section.</p> */}
                   </div>
                 )}
               </div>

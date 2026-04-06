@@ -169,7 +169,7 @@ const fetchSuggestions = async () => {
         
   <input
     type="text"
-    placeholder="Enter your speciality"
+    placeholder="Start typing to search or add a new speciality"
     value={specialityInput}
     onChange={(e) => {
       setSpecialityInput(e.target.value);
@@ -210,7 +210,7 @@ const fetchSuggestions = async () => {
              <input
               type="text"
               name="country"
-              placeholder="Country"
+              placeholder="Enter your country name"
               value={form.country}
               onChange={handleChange}
               required

@@ -168,7 +168,8 @@ let decoded = null;
 
 try {
   decoded = token ? jwtDecode(token) : null;
- // console.log("decoded", decoded.role)
+  console.log("decoded role", decoded.role)
+  console.log("decoded name", decoded.name)
 } catch {}
 
 
@@ -684,8 +685,9 @@ const getCurrentDateTime = () => {
   // if (loading) {
   //   return <div className="p-6 text-center">Loading...</div>
   // }
-
-
+ useEffect(() => {
+    console.log("API URL:", import.meta.env.VITE_API_URL);
+  }, []);
 
   return (
     <ErrorBoundary>
@@ -700,7 +702,7 @@ const getCurrentDateTime = () => {
           />
            <div className="flex items-center relative">
             <span className="text-xs md:text-sm text-gray-950 mr-2 md:mr-4 capitalize truncate max-w-[100px] md:max-w-none">
-            Welcome,<b>{decoded.name }</b> 
+            Welcome,<b>{decoded.name}</b> 
             </span>
              <button
               onClick={handleLogout}
@@ -1018,9 +1020,11 @@ const getCurrentDateTime = () => {
                         <td className="py-3 px-4 capitalize">
                           <span
                             className={`px-3 py-1 rounded  text-sm font-medium ${
-                              u.role === "admin" || u.role == "super_admin"
-                                ? "bg-red-50 rounded-1xl text-red-500 border border-red-500"
-                                : "bg-green-50 rounded-1xl text-green-800 border border-green-800"
+                              u.role === "super_admin"
+                            ? "bg-orange-50 text-orange-500 border border-orange-500"
+                             : u.role === "admin"
+                         ? "bg-red-50 text-red-500 border border-red-500"
+                         : "bg-green-50 text-green-800 border border-green-800"
                             }`}
                           >
                             {u.role}
@@ -1036,7 +1040,7 @@ const getCurrentDateTime = () => {
                           </span>
                         </td>
                         <td className="p-3 ">
-  {u.role !== "admin" && (
+  {u.role !== "admin" && u.role !== "super_admin" && (
     <button
       onClick={() => {
         setSelectedUser(u);
@@ -1047,16 +1051,19 @@ const getCurrentDateTime = () => {
       Add Points
     </button>
   )}
-  {currentUser?.role === "super_admin" && (
-    <button
-      className="rounded-2xl bg-neutral-50 border px-4 py-1 border-gray-300 text-gray-700 hover:bg-gray-100 mr-2"
-      onClick={() => setEditUser(u)}
-    >
-      Edit
-    </button>
-  )}
+  {(
+  (currentUser?.role === "super_admin" && u.role !== "super_admin") ||
+  (currentUser?.role === "admin" && u.role !== "admin" && u.role !== "super_admin")
+) && (
+  <button
+    className="rounded-2xl bg-neutral-50 border px-4 py-1 border-gray-300 text-gray-700 hover:bg-gray-100 mr-2"
+    onClick={() => setEditUser(u)}
+  >
+    Edit
+  </button>
+)}
   
-  {u.role !== "admin" && (
+  {u.role !== "admin" && u.role !== "super_admin" && (
   <button
     className="rounded text-sm bg-neutral-50 border px-4 py-1 border-blue-500 text-blue-700 hover:bg-blue-100"
     onClick={() => handleViewAssignedSurveys(u)}
